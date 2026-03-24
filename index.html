@@ -1,0 +1,1943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Daltex QC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0ede6;--bg2:#e8e4da;--bg3:#ddd8cc;
+  --sidebar:#1e2d22;--sidebar2:#263529;
+  --sidebar-text:#c8d4c0;--sidebar-muted:#6a8068;
+  --accent:#2b5c3f;--accent2:#4a8c62;
+  --amber:#b87820;--amber-bg:#fdf3e0;--amber-border:#e8c87a;
+  --red:#b03030;--red-bg:#faeaea;--red-border:#e8a0a0;
+  --green:#1e6b3a;--green-bg:#e8f5ec;--green-border:#8ecba4;
+  --text:#1a1a17;--text2:#4a4840;--text3:#7a7668;
+  --border:#d0cbbe;--border2:#bcb8ae;--card:#ffffff;
+  --font-display:'DM Serif Display',serif;
+  --font-body:'Instrument Sans',sans-serif;
+  --font-mono:'DM Mono',monospace;
+  --r:8px;--r2:12px;
+}
+html,body,#root{height:100%;font-family:var(--font-body);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+button{font-family:var(--font-body);cursor:pointer;border:none;background:none}
+input,select,textarea{font-family:var(--font-body);font-size:13px;color:var(--text)}
+
+/* LANDING */
+.landing{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
+.landing-logo{font-family:var(--font-display);font-size:32px;color:var(--text)}
+.landing-sub{font-size:12px;color:var(--text3);margin-top:5px;letter-spacing:.06em;text-transform:uppercase}
+.landing-prompt{font-size:15px;color:var(--text2);margin-top:30px;margin-bottom:32px}
+.crop-grid{display:grid;grid-template-columns:repeat(4,200px);gap:18px}
+.crop-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px 20px 20px;cursor:pointer;transition:transform .18s,box-shadow .18s,border-color .18s}
+.crop-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.09);border-color:var(--border2)}
+.crop-icon-wrap{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.crop-name{font-family:var(--font-display);font-size:20px;color:var(--text);margin-bottom:4px}
+.crop-vars{font-size:11px;color:var(--text3);line-height:1.6;margin-bottom:14px}
+.crop-stat{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
+.crop-stat-label{color:var(--text3)}
+.crop-stat-val{font-family:var(--font-mono);color:var(--text2);font-weight:500}
+
+/* APP */
+.layout{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:218px;min-width:218px;background:var(--sidebar);display:flex;flex-direction:column;overflow:hidden}
+.sidebar-logo{padding:16px 18px 12px;border-bottom:1px solid rgba(255,255,255,.07)}
+.sidebar-logo-mark{font-family:var(--font-display);font-size:19px;color:#fff}
+.sidebar-logo-crop{font-size:10px;color:var(--sidebar-muted);letter-spacing:.08em;text-transform:uppercase;margin-top:3px;display:flex;align-items:center;gap:5px}
+.sidebar-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sidebar-sec{padding:16px 12px 5px;font-size:10px;color:var(--sidebar-muted);letter-spacing:.1em;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:6px;margin:1px 8px;color:var(--sidebar-text);font-size:13px;cursor:pointer;transition:background .15s,color .15s}
+.nav-item:hover{background:var(--sidebar2);color:#fff}
+.nav-item.active{background:var(--accent);color:#fff;font-weight:500}
+.nav-icon{width:14px;height:14px;flex-shrink:0;opacity:.65}
+.nav-item.active .nav-icon{opacity:1}
+.sidebar-bottom{margin-top:auto;padding:10px 8px;border-top:1px solid rgba(255,255,255,.06)}
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.topbar{background:var(--bg);border-bottom:1px solid var(--border);padding:0 26px;height:50px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-title{font-family:var(--font-display);font-size:17px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.page{padding:22px 26px;flex:1}
+
+/* COMPONENTS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px}
+.section-title{font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section-title-bar{height:2px;width:20px;border-radius:1px;flex-shrink:0}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px}
+.kpi-label{font-size:11px;color:var(--text3);margin-bottom:4px;font-weight:500}
+.kpi-value{font-family:var(--font-display);font-size:26px;line-height:1}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:4px}
+.kpi-sub.up{color:var(--green)} .kpi-sub.down{color:var(--red)}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
+.badge-pass{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.badge-warn{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.badge-fail{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.badge-hold{background:#fff3e0;color:#b06010;border:1px solid #e8c090}
+.badge-neutral{background:var(--bg2);color:var(--text2);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text3);padding:7px 10px;border-bottom:2px solid var(--border2);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr.click{cursor:pointer}
+tr.click:hover td{background:var(--bg)}
+.tabs{display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:18px}
+.tab{padding:7px 14px;font-size:13px;font-weight:500;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;transition:color .15s,border-color .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid transparent}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--card);color:var(--text2);border-color:var(--border2)}
+.btn-secondary:hover{background:var(--bg2)}
+.btn-sm{padding:4px 10px;font-size:12px}
+.scroll-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
+.lot{font-family:var(--font-mono);font-size:11px;background:var(--bg2);padding:2px 6px;border-radius:4px;color:var(--text2)}
+.sep{height:1px;background:var(--border);margin:12px 0}
+.alert-warn{background:#fff3e0;border:1px solid #e8c090;border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:#7a4a10}
+.alert-fail{background:var(--red-bg);border:1px solid var(--red-border);border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--red)}
+.dp{border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
+.dp-hdr{background:var(--bg2);padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.dp-body{padding:14px;font-size:13px;max-height:calc(100vh - 120px);overflow-y:auto}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+
+/* INSPECTION FORM */
+.form-field{margin-bottom:10px}
+.form-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;display:block}
+.form-label .ar{font-size:10px;color:var(--text3);opacity:.7;font-weight:400;margin-left:4px}
+.form-input{width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:6px;background:var(--card);outline:none;transition:border-color .15s;font-size:13px;color:var(--text)}
+.form-input:focus{border-color:var(--accent)}
+.form-select{width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:6px;background:var(--card);outline:none;font-size:13px;color:var(--text)}
+.defect-section{margin-bottom:16px}
+.defect-section-header{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:6px 10px;border-radius:5px;margin-bottom:8px}
+.defect-row{display:grid;grid-template-columns:1fr 90px 55px 60px;gap:6px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)}
+.defect-row:last-child{border-bottom:none}
+.defect-name{font-size:12px;color:var(--text2)}
+.defect-name .ar-label{font-size:10px;color:var(--text3);display:block;margin-top:1px}
+.defect-input{width:100%;padding:4px 7px;border:1px solid var(--border2);border-radius:4px;background:var(--card);font-family:var(--font-mono);font-size:12px;text-align:right;outline:none}
+.defect-input:focus{border-color:var(--accent)}
+.defect-input.over{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+.defect-thresh{font-size:10px;color:var(--text3);text-align:right}
+.total-row{display:grid;grid-template-columns:1fr 90px 55px 60px;gap:6px;align-items:center;padding:8px 10px;background:var(--bg2);border-radius:6px;margin-top:8px}
+.total-label{font-size:12px;font-weight:600;color:var(--text)}
+.total-val{font-family:var(--font-mono);font-size:14px;font-weight:600;text-align:right}
+.clearance-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.clearance-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg2);border-radius:6px;font-size:11px}
+.clearance-label{color:var(--text2);flex:1;margin-right:8px}
+.toggle-wrap{display:flex;gap:4px}
+.toggle-btn{padding:3px 8px;border-radius:4px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--card);color:var(--text3);transition:all .12s}
+.toggle-btn.active-comply{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+.toggle-btn.active-non{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+.decision-bar{display:flex;gap:8px;margin-top:14px}
+.decision-btn{flex:1;padding:10px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:2px solid transparent;transition:all .15s;text-align:center}
+.decision-a{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+.decision-a:hover,.decision-a.sel{background:var(--green);color:#fff;border-color:var(--green)}
+.decision-r{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+.decision-r:hover,.decision-r.sel{background:var(--red);color:#fff;border-color:var(--red)}
+.brix-large{font-family:var(--font-display);font-size:32px;color:var(--text);line-height:1}
+.wax-options{display:flex;gap:6px}
+.wax-btn{padding:5px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--card);color:var(--text3);transition:all .12s}
+.wax-btn.sel{background:var(--accent);color:#fff;border-color:var(--accent)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+
+<script type="text/javascript">
+var useState = React.useState;
+var ce = React.createElement;
+var Frag = React.Fragment;
+
+/* ─── CITRUS INSPECTION TEMPLATE (from KZ CSV) ─── */
+var CITRUS_DEFECTS = [
+  { section:'External', sectionAr:'عيوب شكلية', color:'#3a7a4a', items:[
+    { key:'blemish',    en:'Blemish',                   ar:'تشوهات',         sev:'Minor',    thresh:8  },
+    { key:'green',      en:'Green colour',              ar:'اخضرار',         sev:'Major',    thresh:5  },
+    { key:'sunburn',    en:'Sunburn',                   ar:'لسعة شمس',       sev:'Major',    thresh:5  },
+    { key:'navel',      en:'Unhealed navel protruding', ar:'عيوب سرة',       sev:'Major',    thresh:3  },
+    { key:'liner_spl',  en:'Liner split',               ar:'تبحير خطي',      sev:'Major',    thresh:3  },
+    { key:'net_spl',    en:'Net split',                 ar:'تبحير شبكي',     sev:'Major',    thresh:2  },
+    { key:'mech_dmg',   en:'Mechanical damage',         ar:'اضرار ميكانيكية',sev:'Major',    thresh:4  },
+    { key:'injuries_e', en:'Injuries',                  ar:'جروح',           sev:'Major',    thresh:3  },
+    { key:'softness',   en:'Softness',                  ar:'ليونة',          sev:'Major',    thresh:3  },
+    { key:'pest_burn',  en:'Pesticide burn',            ar:'لسعة مبيد',      sev:'Minor',    thresh:4  },
+    { key:'fading',     en:'Fading',                    ar:'ذبول',           sev:'Minor',    thresh:4  },
+  ]},
+  { section:'Insect', sectionAr:'عيوب حشرية', color:'#8a3a1a', items:[
+    { key:'thrips',     en:'Thrips',                    ar:'تربس',           sev:'Critical', thresh:0  },
+    { key:'acarus',     en:'Acarus / mites',            ar:'أكاروس',         sev:'Major',    thresh:2  },
+    { key:'scale',      en:'Scale insect',              ar:'حشرة قشرية',     sev:'Critical', thresh:0  },
+    { key:'mealy',      en:'Mealy bug',                 ar:'بق دقيقي',       sev:'Critical', thresh:0  },
+    { key:'fruit_fly',  en:'Fruit fly',                 ar:'ذبابة الفاكهة',  sev:'Critical', thresh:0  },
+  ]},
+  { section:'Internal', sectionAr:'عيوب داخلية', color:'#5a3a8a', items:[
+    { key:'atrophy',    en:'Atrophy',                   ar:'ضمور',           sev:'Major',    thresh:3  },
+    { key:'size_var',   en:'Size variation',            ar:'اختلاف الأحجام', sev:'Minor',    thresh:5  },
+  ]},
+  { section:'Rot', sectionAr:'عفن', color:'#8a1a1a', items:[
+    { key:'alternaria', en:'Alternaria (navel rot)',    ar:'عفن السرة',      sev:'Critical', thresh:0  },
+    { key:'black_rot',  en:'Black rot',                 ar:'عفن هبابي',      sev:'Critical', thresh:0  },
+    { key:'brown_rot',  en:'Brown rot',                 ar:'عفن بني',        sev:'Critical', thresh:0  },
+    { key:'penicillium',en:'Penicillium',               ar:'بنسيليوم',       sev:'Critical', thresh:0  },
+  ]},
+  { section:'Harvest', sectionAr:'عيوب حصاد', color:'#4a5a1a', items:[
+    { key:'long_stem',  en:'Long stem',                 ar:'عنق عالي',       sev:'Minor',    thresh:4  },
+    { key:'stem_pull',  en:'Stem pull',                 ar:'عيب قطف',        sev:'Major',    thresh:3  },
+    { key:'injuries_h', en:'Injuries (harvest)',        ar:'جروح حصاد',      sev:'Major',    thresh:3  },
+    { key:'oil_spots',  en:'Oil spots / bruising',      ar:'كدمات',          sev:'Minor',    thresh:6  },
+  ]},
+];
+
+var CITRUS_VARIETIES = ['Navel','Navelina Navel','Lanelate Navel','Caracara Navel','Valencia','Midknight Valencia','Olinda Valencia','Pineapple Early Valencia','Salustiana Early Valencia','Eureka Lemon','Star Ruby Grapefruit','Nova Mandarin'];
+var CITRUS_SIZES = ['18','23','24','30','36','40','48','55','56','64','72','80','88','100','102','105','113','115','125','126','137','138','150','162','168','200'];
+var CITRUS_CLASSES = ['Class 1','Class 1.5','Class 2','Juice'];
+var WAX_CODES = [{code:'CR',label:'Carnauba (CR)'},{code:'SH',label:'Shellac (SH)'},{code:'No Wax',label:'No Wax'}];
+var CLEARANCE_ITEMS = [
+  'Removing all remaining from previous product',
+  'Cleanliness of equipment and lines',
+  'Correct raw materials for new batch',
+  'Packaging / label change from previous batch',
+];
+var SECTION_COLORS = {External:'#e8f5ec',Insect:'#fff3e0',Internal:'#f0eeff',Rot:'#faeaea',Harvest:'#fffaee'};
+var SECTION_TEXT   = {External:'#1e6b3a',Insect:'#8a3a1a',Internal:'#5a2a9a',Rot:'#8a1a1a',Harvest:'#5a4a10'};
+
+/* ─── MOCK BATCH LIST ─── */
+var BATCHES = [
+  {id:'PB-2026-1194',lot:'809',container:'AMCU 9327595',variety:'Navelina Navel',cls:'Class 1',client:'JUN TRADING',country:'Japan',farm:'Nour',date:'2026-03-14',time:'12:00',size:'48',cartons:1240,cartonWt:16.4,wax:'CR',packing:'Ok',labelling:'Ok',brix:9.2,status:'Released',decision:'A',traceCode:'114050049307104',notes:'',clearance:{c0:'Compliant',c1:'Compliant',c2:'Compliant',c3:'Compliant'},defects:{blemish:2.1,green:0,sunburn:0,navel:0,liner_spl:0,net_spl:0,mech_dmg:0,injuries_e:0,softness:0,pest_burn:0,fading:0,thrips:0,acarus:0,scale:0,mealy:0,fruit_fly:0,atrophy:0,size_var:0,alternaria:0,black_rot:0,brown_rot:0,penicillium:0,long_stem:0,stem_pull:0,injuries_h:0,oil_spots:2.1},totalDefect:4.2},
+  {id:'PB-2026-1187',lot:'811',container:'OTPU 6537831',variety:'Eureka Lemon',cls:'Class 1.5',client:'Lenta',country:'Russia',farm:'Nour',date:'2026-03-13',time:'18:20',size:'113',cartons:980,cartonWt:16.6,wax:'SH',packing:'Ok',labelling:'Ok',brix:7.3,status:'Released',decision:'A',traceCode:'114044701315104',notes:'',clearance:{c0:'Compliant',c1:'Compliant',c2:'Compliant',c3:'Compliant'},defects:{blemish:0,green:0,sunburn:0,navel:0,liner_spl:0,net_spl:0,mech_dmg:0,injuries_e:0,softness:0,pest_burn:0,fading:0,thrips:1.8,acarus:0,scale:0,mealy:0,fruit_fly:0,atrophy:0,size_var:0,alternaria:0,black_rot:0,brown_rot:0,penicillium:0,long_stem:0,stem_pull:0,injuries_h:3.5,oil_spots:0},totalDefect:5.3},
+  {id:'PB-2026-1201',lot:'815',container:'',variety:'Midknight Valencia',cls:'Class 1',client:'AM FRESH (COOP)',country:'Netherlands',farm:'Hana',date:'2026-03-15',time:'09:00',size:'56',cartons:620,cartonWt:15.8,wax:'CR',packing:'Ok',labelling:'Ok',brix:10.1,status:'Hold',decision:'R',traceCode:'116042001317104',notes:'High thrips count detected. Line stopped.',clearance:{c0:'Compliant',c1:'Compliant',c2:'Non-Compliant',c3:'Compliant'},defects:{blemish:3.2,green:0,sunburn:4.1,navel:0,liner_spl:0,net_spl:0,mech_dmg:1.8,injuries_e:0,softness:0,pest_burn:0,fading:0,thrips:2.4,acarus:0,scale:0,mealy:0,fruit_fly:0,atrophy:0,size_var:0,alternaria:0,black_rot:0,brown_rot:0,penicillium:0,long_stem:0,stem_pull:1.2,injuries_h:0,oil_spots:3.4},totalDefect:16.1},
+  {id:'PB-2026-1178',lot:'806',container:'HLXU 5522110',variety:'Star Ruby Grapefruit',cls:'Class 1',client:'JUN TRADING',country:'Japan',farm:'Salma',date:'2026-03-12',time:'14:30',size:'40',cartons:840,cartonWt:16.5,wax:'CR',packing:'Ok',labelling:'Ok',brix:9.8,status:'Released',decision:'A',traceCode:'112050039312104',notes:'',clearance:{c0:'Compliant',c1:'Compliant',c2:'Compliant',c3:'Compliant'},defects:{blemish:1.8,green:0,sunburn:0,navel:0,liner_spl:0,net_spl:0,mech_dmg:0,injuries_e:0,softness:0,pest_burn:0,fading:0,thrips:0,acarus:0,scale:0,mealy:0,fruit_fly:0,atrophy:0,size_var:0,alternaria:0,black_rot:0,brown_rot:0,penicillium:0,long_stem:0,stem_pull:0,injuries_h:0,oil_spots:1.8},totalDefect:3.6},
+  {id:'PB-2026-1165',lot:'802',container:'',variety:'Lanelate Navel',cls:'Class 1',client:'Aartsen fruit',country:'Netherlands',farm:'Badr',date:'2026-03-11',time:'10:00',size:'48',cartons:1100,cartonWt:16.2,wax:'SH',packing:'Ok',labelling:'Ok',brix:8.9,status:'Released',decision:'A',traceCode:'114050030311104',notes:'',clearance:{c0:'Compliant',c1:'Compliant',c2:'Compliant',c3:'Compliant'},defects:{blemish:2.7,green:0,sunburn:2.1,navel:0,liner_spl:0,net_spl:0,mech_dmg:0,injuries_e:0,softness:0,pest_burn:0,fading:0,thrips:0,acarus:2.1,scale:0,mealy:0,fruit_fly:0,atrophy:0,size_var:0,alternaria:0,black_rot:0,brown_rot:0,penicillium:0,long_stem:0,stem_pull:0,injuries_h:0,oil_spots:2.7},totalDefect:9.6},
+];
+
+/* ─── HELPERS ─── */
+function scoreColor(s){return s>=85?'#1e6b3a':s>=70?'#b87820':'#b03030';}
+function scoreBg(s){return s>=85?'#e8f5ec':s>=70?'#fdf3e0':'#faeaea';}
+function totalScore(defects){
+  var t=0;
+  for(var k in defects) t+=parseFloat(defects[k])||0;
+  return Math.round(t*10)/10;
+}
+function hasCritical(defects){
+  var critKeys=['thrips','scale','mealy','fruit_fly','alternaria','black_rot','brown_rot','penicillium'];
+  for(var i=0;i<critKeys.length;i++){if((parseFloat(defects[critKeys[i]])||0)>0) return true;}
+  return false;
+}
+function decisionBadge(d){
+  if(d==='A') return ce('span',{className:'badge badge-pass'},'Accept');
+  if(d==='R') return ce('span',{className:'badge badge-fail'},'Reject');
+  return ce('span',{className:'badge badge-neutral'},d);
+}
+function StatusBadge(props){
+  var map={Released:'pass',Hold:'warn',Rework:'hold'};
+  return ce('span',{className:'badge badge-'+(map[props.s]||'neutral')},props.s);
+}
+function Ring(props){
+  var sz=props.size||40,s=props.score;
+  return ce('div',{style:{width:sz,height:sz,borderRadius:'50%',background:scoreBg(s),border:'1.5px solid '+scoreColor(s)+'60',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'var(--font-display)',fontSize:Math.floor(sz*.36),color:scoreColor(s),flexShrink:0}},s);
+}
+
+/* ─── MINI CHARTS ─── */
+function MiniLine(props){
+  var data=props.data,k1=props.k1,k2=props.k2;
+  var W=500,H=140,pl=26,pr=8,pt=6,pb=22;
+  var pw=W-pl-pr,ph=H-pt-pb,yMin=60,yMax=100;
+  function xs(i){return pl+i/(data.length-1)*pw;}
+  function ys(v){return pt+ph-(v-yMin)/(yMax-yMin)*ph;}
+  return ce('svg',{viewBox:'0 0 '+W+' '+H,width:'100%'},
+    [0,.5,1].map(function(f,i){var y=pt+f*ph,v=Math.round(yMax-f*(yMax-yMin));return ce('g',{key:i},ce('line',{x1:pl,y1:y,x2:W-pr,y2:y,stroke:'#d0cbbe',strokeWidth:.5}),ce('text',{x:pl-4,y:y,textAnchor:'end',dominantBaseline:'middle',fontSize:9,fill:'#7a7668'},v));}),
+    data.map(function(d,i){return ce('text',{key:'x'+i,x:xs(i),y:H-4,textAnchor:'middle',fontSize:9,fill:'#7a7668'},d.m);}),
+    ce('polyline',{points:data.map(function(d,i){return xs(i)+','+ys(d[k1]);}).join(' '),fill:'none',stroke:'#2b5c3f',strokeWidth:1.8,strokeLinejoin:'round'}),
+    ce('polyline',{points:data.map(function(d,i){return xs(i)+','+ys(d[k2]);}).join(' '),fill:'none',stroke:'#b03030',strokeWidth:1.8,strokeLinejoin:'round',strokeDasharray:'5 3'}),
+    data.map(function(d,i){return ce('circle',{key:'a'+i,cx:xs(i),cy:ys(d[k1]),r:2.5,fill:'#2b5c3f',stroke:'#fff',strokeWidth:1.2});}),
+    data.map(function(d,i){return ce('circle',{key:'b'+i,cx:xs(i),cy:ys(d[k2]),r:2.5,fill:'#b03030',stroke:'#fff',strokeWidth:1.2});})
+  );
+}
+
+/* ─── INSPECTION FORM (session-based) ─── */
+function InspectionForm(props){
+  var onClose=props.onClose, batch=props.batch||null, packhouse=props.packhouse||{name:'—',id:'—',color:'#2b5c3f'};
+  var isEdit=!!batch;
+
+  /* ── HEADER STATE (locked after first save, or pre-filled when editing) ── */
+  var sf=useState(batch?batch.date:new Date().toISOString().slice(0,10)); var date=sf[0]; var setDate=sf[1];
+  var sv=useState(batch?batch.variety:'Navel'); var variety=sv[0]; var setVariety=sv[1];
+  var sc=useState(batch?batch.container:''); var container=sc[0]; var setContainer=sc[1];
+  var sl=useState(batch?batch.lot:''); var lot=sl[0]; var setLot=sl[1];
+  var scls=useState(batch?batch.cls:'Class 1'); var cls=scls[0]; var setCls=scls[1];
+  var scli=useState(batch?batch.client:''); var client=scli[0]; var setClient=scli[1];
+  var sco=useState(batch?batch.country:''); var country=sco[0]; var setCountry=sco[1];
+  var sfm=useState(batch?batch.farm:''); var farm=sfm[0]; var setFarm=sfm[1];
+  var spk=useState(batch?batch.packing:'Ok'); var packing=spk[0]; var setPacking=spk[1];
+  var slb=useState(batch?batch.labelling:'Ok'); var labelling=slb[0]; var setLabelling=slb[1];
+  var swx=useState(batch?batch.wax:'CR'); var wax=swx[0]; var setWax=swx[1];
+  var strace=useState(batch?batch.traceCode:''); var traceCode=strace[0]; var setTraceCode=strace[1];
+  var sdec=useState(batch?batch.decision:''); var decision=sdec[0]; var setDecision=sdec[1];
+  var sHdrLocked=useState(isEdit); var hdrLocked=sHdrLocked[0]; var setHdrLocked=sHdrLocked[1];
+
+  /* ── STICKER / LABEL STATE ── */
+  var sGGN=useState(batch?batch.ggn||'':''); var ggn=sGGN[0]; var setGGN=sGGN[1];
+  var sPHCode=useState(batch?batch.phCode||'40.01.20.02/CIP':''); var phCode=sPHCode[0]; var setPHCode=sPHCode[1];
+  var sFarmCode=useState(batch?batch.farmCode||'':''); var farmCode=sFarmCode[0]; var setFarmCode=sFarmCode[1];
+  var sNetWt=useState(batch?batch.netWt||'':''); var netWt=sNetWt[0]; var setNetWt=sNetWt[1];
+  var sImporter=useState(batch?batch.importer||'':''); var importer=sImporter[0]; var setImporter=sImporter[1];
+  var sImporterAddr=useState(batch?batch.importerAddr||'':''); var importerAddr=sImporterAddr[0]; var setImporterAddr=sImporterAddr[1];
+  var sStickerImg=useState(batch?batch.stickerImg||'':''); var stickerImg=sStickerImg[0]; var setStickerImg=sStickerImg[1];
+  var sStickerChecks=useState({product:false,variety:false,cls:false,phName:false,phCode:false,farmCode:false,packDate:false,netWt:false,trace:false,ggn:false,lot:false,importer:false,origin:false});
+  var stickerChecks=sStickerChecks[0]; var setStickerChecks=sStickerChecks[1];
+  function toggleCheck(k){var n=Object.assign({},stickerChecks);n[k]=!n[k];setStickerChecks(n);}
+  var totalChecks=Object.keys(stickerChecks).length;
+  var doneChecks=Object.values(stickerChecks).filter(Boolean).length;
+
+  /* ── NEW PALLET DIALOG ── */
+  var sNP=useState(false); var showNP=sNP[0]; var setShowNP=sNP[1];
+
+  /* ── SAMPLE ROWS ── */
+  function emptyDefects(){var d={};CITRUS_DEFECTS.forEach(function(sec){sec.items.forEach(function(i){d[i.key]='0';});});return d;}
+  function newRow(){
+    var now=new Date();
+    var hh=String(now.getHours()).padStart(2,'0');
+    var mm=String(now.getMinutes()).padStart(2,'0');
+    return {id:Date.now(),time:hh+':'+mm,size:'48',cartonWt:'',brix:'',defects:emptyDefects(),notes:''};
+  }
+  var initRows=batch?[{id:1,time:batch.time||'',size:batch.size||'48',cartonWt:String(batch.cartonWt||''),brix:String(batch.brix||''),defects:batch.defects||emptyDefects(),notes:batch.notes||''}]:[newRow()];
+  var sRows=useState(initRows); var rows=sRows[0]; var setRows=sRows[1];
+
+  /* ── CLEARANCE ── */
+  var initCl={c0:'Compliant',c1:'Compliant',c2:'Compliant',c3:'Compliant'};
+  if(batch&&batch.clearance) initCl=batch.clearance;
+  var scl=useState(initCl); var clearance=scl[0]; var setClearance=scl[1];
+
+  /* ── ROW HELPERS ── */
+  function updateRow(id,field,val){
+    setRows(rows.map(function(r){return r.id===id?Object.assign({},r,function(){var o={};o[field]=val;return o;}()):r;}));
+  }
+  function updateRowDefect(id,key,val){
+    setRows(rows.map(function(r){
+      if(r.id!==id) return r;
+      var nd=Object.assign({},r.defects);nd[key]=val;
+      return Object.assign({},r,{defects:nd});
+    }));
+  }
+  function addRow(){setRows(rows.concat([newRow()]));}
+  function removeRow(id){if(rows.length>1) setRows(rows.filter(function(r){return r.id!==id;}));}
+
+  /* ── AVERAGES ── */
+  function avgField(field){
+    var vals=rows.map(function(r){return parseFloat(r[field])||0;}).filter(function(v){return v>0;});
+    return vals.length?Math.round(vals.reduce(function(a,b){return a+b;},0)/vals.length*10)/10:0;
+  }
+  function avgDefect(key){
+    var vals=rows.map(function(r){return parseFloat(r.defects[key])||0;});
+    return Math.round(vals.reduce(function(a,b){return a+b;},0)/vals.length*100)/100;
+  }
+  var avgTotal=0;
+  CITRUS_DEFECTS.forEach(function(sec){sec.items.forEach(function(d){avgTotal+=avgDefect(d.key);});});
+  avgTotal=Math.round(avgTotal*100)/100;
+  var hasCrit=CITRUS_DEFECTS.some(function(sec){return sec.items.some(function(d){return d.sev==='Critical'&&avgDefect(d.key)>0;});});
+  var autoDec=hasCrit||avgTotal>10?'R':'A';
+
+  /* ── NEW PALLET HANDLER ── */
+  function startSameLOT(){
+    setRows([newRow()]);
+    setDecision('');
+    setShowNP(false);
+  }
+  function startNewLOT(){
+    setLot('');setContainer('');setVariety('Navel');setCls('Class 1');
+    setClient('');setCountry('');setFarm('');setWax('CR');setTraceCode('');
+    setRows([newRow()]);setDecision('');setHdrLocked(false);setShowNP(false);
+  }
+
+  /* ─── RENDER ─── */
+  return ce('div',{style:{background:'var(--bg)',minHeight:'100vh'}},
+
+    /* ── sticky topbar ── */
+    ce('div',{style:{background:'var(--card)',borderBottom:'1px solid var(--border)',padding:'0 26px',height:50,display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:20}},
+      ce('div',{style:{display:'flex',alignItems:'center',gap:10}},
+        ce('button',{className:'btn btn-secondary btn-sm',onClick:onClose},'← Back'),
+        ce('div',{style:{fontFamily:'var(--font-display)',fontSize:16}},isEdit?'Edit inspection':'New inspection'),
+        ce('div',{style:{display:'flex',alignItems:'center',gap:6,background:packhouse.color+'14',border:'1px solid '+packhouse.color+'40',borderRadius:6,padding:'3px 10px'}},
+          ce('div',{style:{width:7,height:7,borderRadius:'50%',background:packhouse.color,flexShrink:0}}),
+          ce('span',{style:{fontSize:11,fontWeight:600,color:packhouse.color}},packhouse.name)
+        ),
+        lot&&ce('div',{style:{background:'var(--bg2)',borderRadius:6,padding:'3px 10px',fontSize:11,fontWeight:500,color:'var(--text2)'}},'LOT '+lot)
+      ),
+      ce('div',{style:{display:'flex',alignItems:'center',gap:8}},
+        ce('span',{style:{fontSize:11,color:'var(--text3)'}},'Avg defect:'),
+        ce('span',{style:{fontFamily:'var(--font-mono)',fontSize:14,fontWeight:600,color:avgTotal>10?'var(--red)':avgTotal>5?'var(--amber)':'var(--green)'}},avgTotal.toFixed(2)+'%'),
+        hasCrit&&ce('span',{className:'badge badge-fail'},'Critical'),
+        !isEdit&&ce('button',{className:'btn btn-sm',style:{background:'#eef4ff',border:'1px solid #a0b8e8',color:'#2a5aa0',fontWeight:500,marginLeft:4},onClick:function(){setShowNP(true);}},'New pallet'),
+        ce('button',{className:'btn btn-primary btn-sm'},'Save inspection')
+      )
+    ),
+
+    /* ── NEW PALLET DIALOG ── */
+    showNP&&ce('div',{style:{position:'fixed',top:0,left:0,right:0,bottom:0,background:'rgba(0,0,0,.4)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:100}},
+      ce('div',{style:{background:'var(--card)',borderRadius:'var(--r2)',padding:'24px 28px',width:380,border:'1px solid var(--border)'}},
+        ce('div',{style:{fontFamily:'var(--font-display)',fontSize:20,marginBottom:6}},'New pallet'),
+        ce('div',{style:{fontSize:13,color:'var(--text3)',marginBottom:20}},'Is this pallet from the same LOT as the current inspection, or a completely new LOT?'),
+        ce('div',{style:{display:'flex',flexDirection:'column',gap:10}},
+          ce('button',{
+            className:'btn btn-primary',
+            style:{justifyContent:'flex-start',padding:'14px 16px',flexDirection:'column',alignItems:'flex-start',height:'auto'},
+            onClick:startSameLOT
+          },
+            ce('div',{style:{fontWeight:600,marginBottom:2}},'Same LOT — '+( lot||'current')),
+            ce('div',{style:{fontSize:11,opacity:.8,fontWeight:400}},'Keeps header. Clears samples. Start adding new rows immediately.')
+          ),
+          ce('button',{
+            className:'btn btn-secondary',
+            style:{justifyContent:'flex-start',padding:'14px 16px',flexDirection:'column',alignItems:'flex-start',height:'auto'},
+            onClick:startNewLOT
+          },
+            ce('div',{style:{fontWeight:600,marginBottom:2}},'New LOT'),
+            ce('div',{style:{fontSize:11,color:'var(--text3)',fontWeight:400}},'Clears everything. Fill in a fresh header for the new LOT.')
+          ),
+          ce('button',{className:'btn btn-secondary btn-sm',onClick:function(){setShowNP(false);}},'\u2715 Cancel')
+        )
+      )
+    ),
+
+    ce('div',{style:{padding:'22px 26px',maxWidth:1200,margin:'0 auto'}},
+
+      /* ── SECTION A: Header (locked after start) ── */
+      ce('div',{className:'card',style:{marginBottom:14}},
+        ce('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}},
+          ce('div',{className:'section-title',style:{marginBottom:0}},
+            ce('div',{className:'section-title-bar',style:{background:'#2b5c3f'}}),
+            'Inspection header',
+            ce('span',{style:{fontSize:10,color:'var(--text3)',fontWeight:400,marginLeft:6}},hdrLocked?'Locked — shared across all samples on this LOT':'Fill in once, then lock'),
+            hdrLocked&&ce('span',{style:{fontSize:10,background:'var(--green-bg)',color:'var(--green)',border:'1px solid var(--green-border)',borderRadius:10,padding:'1px 8px',marginLeft:6}},'Locked')
+          ),
+          hdrLocked
+            ?ce('button',{className:'btn btn-secondary btn-sm',onClick:function(){setHdrLocked(false);}},'Unlock to edit')
+            :ce('button',{className:'btn btn-primary btn-sm',onClick:function(){setHdrLocked(true);}},'Lock header')
+        ),
+
+        /* Packhouse banner */
+        ce('div',{style:{display:'flex',alignItems:'center',gap:10,background:packhouse.color+'0e',border:'1px solid '+packhouse.color+'30',borderRadius:8,padding:'9px 14px',marginBottom:14}},
+          ce('div',{style:{width:32,height:32,borderRadius:8,background:packhouse.color,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'var(--font-mono)',fontSize:12,fontWeight:700,color:'#fff',flexShrink:0}},packhouse.initials||packhouse.id.slice(0,2)),
+          ce('div',null,
+            ce('div',{style:{fontWeight:600,fontSize:13,color:packhouse.color}},packhouse.name),
+            ce('div',{style:{fontSize:11,color:'var(--text3)'}},'Check place: '+packhouse.id)
+          ),
+          ce('div',{style:{marginLeft:'auto',fontSize:11,color:'var(--text3)',fontStyle:'italic'}},'Set at login \u2014 cannot be changed here')
+        ),
+
+        /* Header fields — disabled when locked */
+        ce('div',{className:'grid4',style:{opacity:hdrLocked?.6:1,pointerEvents:hdrLocked?'none':'auto'}},
+          ce('div',{className:'form-field'},ce('label',{className:'form-label'},'Date'),ce('input',{className:'form-input',type:'date',value:date,onChange:function(e){setDate(e.target.value);}})),
+          ce('div',{className:'form-field'},ce('label',{className:'form-label'},'LOT No'),ce('input',{className:'form-input',value:lot,onChange:function(e){setLot(e.target.value);},placeholder:'e.g. 809'})),
+          ce('div',{className:'form-field'},ce('label',{className:'form-label'},'Container No',ce('span',{style:{color:'var(--text3)',fontWeight:400}},' (optional)')),ce('input',{className:'form-input',value:container,onChange:function(e){setContainer(e.target.value);},placeholder:'e.g. AMCU 9327595 — can add later'})),
+          ce('div',{className:'form-field'},ce('label',{className:'form-label'},'Farm'),ce('input',{className:'form-input',value:farm,onChange:function(e){setFarm(e.target.value);},placeholder:'Farm name'}))
+        ),
+        ce('div',{className:'grid4',style:{opacity:hdrLocked?.6:1,pointerEvents:hdrLocked?'none':'auto'}},
+          ce('div',{className:'form-field'},ce('label',{className:'form-label'},'Variety'),ce('select',{className:'form-select',value:variety,onChange:function(e){setVariety(e.target.value);}},CITRUS_VARIETIES.map(function(v){return ce('option',{key:v,value:v},v);}))),
+          ce('div',{className:'form-field'},ce('label',{className:'form-label'},'Class'),ce('select',{className:'form-select',value:cls,onChange:function(e){setCls(e.target.value);}},CITRUS_CLASSES.map(function(c){return ce('option',{key:c,value:c},c);}))),
+          ce('div',{className:'form-field'},ce('label',{className:'form-label'},'Client'),ce('input',{className:'form-input',value:client,onChange:function(e){setClient(e.target.value);},placeholder:'Client name'})),
+          ce('div',{className:'form-field'},ce('label',{className:'form-label'},'Country'),ce('input',{className:'form-input',value:country,onChange:function(e){setCountry(e.target.value);},placeholder:'Destination'}))
+        ),
+        ce('div',{style:{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,opacity:hdrLocked?.6:1,pointerEvents:hdrLocked?'none':'auto'}},
+          ce('div',{className:'form-field'},ce('label',{className:'form-label'},'Wax — التشميع'),
+            ce('div',{className:'wax-options'},WAX_CODES.map(function(w){return ce('button',{key:w.code,className:'wax-btn'+(wax===w.code?' sel':''),onClick:function(){setWax(w.code);}},w.code);}))
+          ),
+          ce('div',{className:'form-field'},ce('label',{className:'form-label'},'Packing'),ce('select',{className:'form-select',value:packing,onChange:function(e){setPacking(e.target.value);}},['Ok','Not Ok'].map(function(v){return ce('option',{key:v,value:v},v);}))),
+          ce('div',{className:'form-field'},ce('label',{className:'form-label'},'Labelling & coding'),ce('select',{className:'form-select',value:labelling,onChange:function(e){setLabelling(e.target.value);}},['Ok','Not Ok'].map(function(v){return ce('option',{key:v,value:v},v);})))
+        )
+      ),
+
+      /* ── SECTION A2: LABEL STICKER ── */
+      ce('div',{className:'card',style:{marginBottom:14}},
+        ce('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}},
+          ce('div',{className:'section-title',style:{marginBottom:0}},
+            ce('div',{className:'section-title-bar',style:{background:'#5a3a8a'}}),
+            'Label sticker — \u0627\u0644\u0644\u0635\u0642\u0629',
+            ce('span',{style:{fontSize:10,color:'var(--text3)',fontWeight:400,marginLeft:6}},'Confirmed once per LOT — changes with each new LOT')
+          ),
+          doneChecks===totalChecks
+            ? ce('span',{style:{fontSize:11,background:'var(--green-bg)',color:'var(--green)',border:'1px solid var(--green-border)',borderRadius:10,padding:'2px 10px',fontWeight:600}},'\u2713 All '+totalChecks+' fields verified')
+            : ce('span',{style:{fontSize:11,background:'var(--amber-bg)',color:'var(--amber)',border:'1px solid var(--amber-border)',borderRadius:10,padding:'2px 10px',fontWeight:500}},doneChecks+' / '+totalChecks+' verified')
+        ),
+
+        ce('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}},
+
+          /* LEFT: sticker photo + extra fields */
+          ce('div',null,
+            /* Photo upload / Drive link */
+            ce('div',{className:'form-field',style:{marginBottom:12}},
+              ce('label',{className:'form-label'},'Sticker photo or Google Drive link'),
+              ce('div',{style:{display:'flex',gap:8,alignItems:'stretch'}},
+                ce('input',{
+                  className:'form-input',
+                  value:stickerImg,
+                  onChange:function(e){setStickerImg(e.target.value);},
+                  placeholder:'Paste Google Drive link or photo URL...',
+                  style:{flex:1}
+                }),
+                ce('label',{
+                  style:{display:'flex',alignItems:'center',gap:5,padding:'6px 12px',background:'var(--bg2)',border:'1px solid var(--border2)',borderRadius:6,cursor:'pointer',fontSize:12,color:'var(--text2)',whiteSpace:'nowrap'},
+                },
+                  ce('svg',{width:14,height:14,viewBox:'0 0 16 16',fill:'currentColor'},ce('path',{d:'M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'}),ce('path',{d:'M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z'})),
+                  'Upload photo',
+                  ce('input',{type:'file',accept:'image/*',style:{display:'none'},onChange:function(e){
+                    var file=e.target.files&&e.target.files[0];
+                    if(file){var reader=new FileReader();reader.onload=function(ev){setStickerImg(ev.target.result);};reader.readAsDataURL(file);}
+                  }})
+                )
+              )
+            ),
+
+            /* Sticker image preview */
+            stickerImg&&ce('div',{style:{marginBottom:12,border:'1px solid var(--border)',borderRadius:8,overflow:'hidden',background:'var(--bg2)',padding:6}},
+              stickerImg.startsWith('data:')||stickerImg.startsWith('http')
+                ? ce('img',{src:stickerImg,style:{width:'100%',maxHeight:180,objectFit:'contain',borderRadius:4,display:'block'}})
+                : ce('div',{style:{padding:'10px 12px',fontSize:12,color:'var(--accent)',wordBreak:'break-all'}},
+                    ce('svg',{width:14,height:14,viewBox:'0 0 16 16',fill:'currentColor',style:{marginRight:6,flexShrink:0}},ce('path',{d:'M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1.002 1.002 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4.018 4.018 0 0 1-.128-1.287z'}),ce('path',{d:'M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243L6.586 4.672z'})),
+                    'Drive link: '+stickerImg.slice(0,60)+'...'
+                  )
+            ),
+
+            /* Extra sticker fields */
+            ce('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}},
+              ce('div',{className:'form-field'},ce('label',{className:'form-label'},'GGN (GlobalG.A.P.)'),ce('input',{className:'form-input',value:ggn,onChange:function(e){setGGN(e.target.value);},placeholder:'e.g. 4059883894394',style:{fontFamily:'var(--font-mono)',fontSize:12}})),
+              ce('div',{className:'form-field'},ce('label',{className:'form-label'},'Packhouse code'),ce('input',{className:'form-input',value:phCode,onChange:function(e){setPHCode(e.target.value);},placeholder:'e.g. 40.01.20.02/CIP',style:{fontFamily:'var(--font-mono)',fontSize:12}})),
+              ce('div',{className:'form-field'},ce('label',{className:'form-label'},'Farm code'),ce('input',{className:'form-input',value:farmCode,onChange:function(e){setFarmCode(e.target.value);},placeholder:'e.g. 55.01.37.40.CIF',style:{fontFamily:'var(--font-mono)',fontSize:12}})),
+              ce('div',{className:'form-field'},ce('label',{className:'form-label'},'Net weight'),ce('input',{className:'form-input',value:netWt,onChange:function(e){setNetWt(e.target.value);},placeholder:'e.g. 1.5 KG x 13.5 KG'})),
+              ce('div',{className:'form-field'},ce('label',{className:'form-label'},'Importer name'),ce('input',{className:'form-input',value:importer,onChange:function(e){setImporter(e.target.value);},placeholder:'e.g. T&G Fresh Ltd'})),
+              ce('div',{className:'form-field'},ce('label',{className:'form-label'},'Importer address'),ce('input',{className:'form-input',value:importerAddr,onChange:function(e){setImporterAddr(e.target.value);},placeholder:'e.g. 113A Carbine Road, Auckland'}))
+            )
+          ),
+
+          /* RIGHT: verification checklist */
+          ce('div',null,
+            ce('div',{style:{fontSize:11,fontWeight:600,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.07em',marginBottom:10}},'Sticker verification checklist — tick each field confirmed correct on the physical label'),
+            ce('div',{style:{display:'flex',flexDirection:'column',gap:0,border:'1px solid var(--border)',borderRadius:8,overflow:'hidden'}},
+              [
+                {key:'product',    label:'Product',           value:'Oranges',                 fixed:true},
+                {key:'variety',    label:'Variety',           value:variety,                   fixed:false},
+                {key:'cls',        label:'Class',             value:cls,                       fixed:false},
+                {key:'phName',     label:'Packhouse name',    value:packhouse.name,            fixed:true},
+                {key:'phCode',     label:'Packhouse code',    value:phCode||'—',              fixed:false},
+                {key:'farmCode',   label:'Farm code',         value:farmCode||'—',            fixed:false},
+                {key:'packDate',   label:'Packing date',      value:date,                      fixed:false},
+                {key:'netWt',      label:'Net weight',        value:netWt||'—',               fixed:false},
+                {key:'trace',      label:'Trace code',        value:traceCode||'—',           fixed:false},
+                {key:'ggn',        label:'GGN',               value:ggn||'—',                 fixed:false},
+                {key:'lot',        label:'LOT No',            value:lot||'—',                 fixed:false},
+                {key:'importer',   label:'Imported by',       value:importer||'—',            fixed:false},
+                {key:'origin',     label:'Country of origin', value:'Egypt',                   fixed:true},
+              ].map(function(item,i){
+                var checked=stickerChecks[item.key];
+                return ce('div',{key:item.key,
+                  style:{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderBottom:'1px solid var(--border)',background:checked?'var(--green-bg)':'transparent',cursor:'pointer',transition:'background .12s'},
+                  onClick:function(){toggleCheck(item.key);}
+                },
+                  /* checkbox */
+                  ce('div',{style:{width:18,height:18,borderRadius:4,border:'1.5px solid '+(checked?'var(--green)':'var(--border2)'),background:checked?'var(--green)':'var(--card)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'all .12s'}},
+                    checked&&ce('svg',{width:10,height:10,viewBox:'0 0 10 10'},ce('path',{d:'M1.5 5l2.5 2.5 4.5-4.5',stroke:'#fff',strokeWidth:1.8,fill:'none',strokeLinecap:'round',strokeLinejoin:'round'}))
+                  ),
+                  /* label */
+                  ce('div',{style:{fontSize:11,color:'var(--text3)',minWidth:110}},item.label),
+                  /* value */
+                  ce('div',{style:{fontSize:12,fontWeight:500,color:checked?'var(--green)':'var(--text)',fontFamily:['trace','ggn','phCode','farmCode','lot'].indexOf(item.key)>-1?'var(--font-mono)':'inherit',flex:1}},item.value),
+                  /* fixed badge */
+                  item.fixed&&ce('span',{style:{fontSize:9,color:'var(--text3)',background:'var(--bg2)',borderRadius:8,padding:'1px 6px'},'title':'Auto-filled — cannot change'},'fixed')
+                );
+              })
+            ),
+
+            /* quick action */
+            ce('button',{
+              style:{marginTop:8,width:'100%',padding:'7px',background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:6,fontSize:11,color:'var(--text2)',cursor:'pointer'},
+              onClick:function(){
+                var all=Object.assign({},stickerChecks);
+                var anyUnchecked=Object.values(all).some(function(v){return !v;});
+                Object.keys(all).forEach(function(k){all[k]=anyUnchecked;});
+                setStickerChecks(all);
+              }
+            },doneChecks===totalChecks?'Uncheck all':'Mark all as verified')
+          )
+        )
+      ),
+
+      /* ── SECTION B: SAMPLE ROWS ── */
+      ce('div',{className:'card',style:{marginBottom:14,padding:0,overflow:'hidden'}},
+        /* header */
+        ce('div',{style:{padding:'12px 18px',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'space-between'}},
+          ce('div',null,
+            ce('div',{className:'section-title',style:{marginBottom:0}},
+              ce('div',{className:'section-title-bar',style:{background:'#b03030'}}),
+              'Sample readings',
+              ce('span',{style:{fontSize:11,color:'var(--text3)',fontWeight:400,textTransform:'none',letterSpacing:0,marginLeft:6}},rows.length+' sample'+(rows.length!==1?'s':'')+' · defects as % of each sample')
+            )
+          ),
+          ce('button',{className:'btn btn-primary btn-sm',onClick:addRow},'+ Add sample row')
+        ),
+
+        /* column headers */
+        ce('div',{style:{display:'grid',gridTemplateColumns:'70px 62px 72px 62px repeat(5,52px) 1fr 28px',gap:4,padding:'6px 14px',background:'var(--bg2)',borderBottom:'1px solid var(--border2)'}},
+          ['Time','Size','Wt (kg)','Brix','Blemish','Sunburn','Mech','Thrips','Oil spots','Notes',''].map(function(h,i){
+            return ce('div',{key:i,style:{fontSize:10,fontWeight:600,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.04em',textAlign:i>=4&&i<=8?'center':'left'}},h);
+          })
+        ),
+
+        /* rows */
+        rows.map(function(row,ri){
+          var rowTotal=0;
+          CITRUS_DEFECTS.forEach(function(sec){sec.items.forEach(function(d){rowTotal+=parseFloat(row.defects[d.key])||0;});});
+          rowTotal=Math.round(rowTotal*100)/100;
+          var rowCrit=CITRUS_DEFECTS.some(function(sec){return sec.items.some(function(d){return d.sev==='Critical'&&(parseFloat(row.defects[d.key])||0)>0;});});
+          return ce('div',{key:row.id,style:{display:'grid',gridTemplateColumns:'70px 62px 72px 62px repeat(5,52px) 1fr 28px',gap:4,padding:'6px 14px',borderBottom:'1px solid var(--border)',background:rowCrit?'#fff8f8':ri%2===0?'transparent':'var(--bg2)'+22,alignItems:'center'}},
+            /* time */
+            ce('input',{style:{padding:'4px 5px',border:'1px solid var(--border2)',borderRadius:4,fontSize:12,fontFamily:'var(--font-mono)',width:'100%',background:'var(--card)'},type:'time',value:row.time,onChange:function(e){updateRow(row.id,'time',e.target.value);}}),
+            /* size */
+            ce('select',{style:{padding:'4px 4px',border:'1px solid var(--border2)',borderRadius:4,fontSize:12,width:'100%',background:'var(--card)',color:'var(--text)'},value:row.size,onChange:function(e){updateRow(row.id,'size',e.target.value);}},
+              CITRUS_SIZES.map(function(s){return ce('option',{key:s,value:s},s);})
+            ),
+            /* carton weight */
+            ce('input',{style:{padding:'4px 5px',border:'1px solid var(--border2)',borderRadius:4,fontSize:12,fontFamily:'var(--font-mono)',width:'100%',textAlign:'right',background:'var(--card)'},type:'number',step:'0.1',value:row.cartonWt,placeholder:'kg',onChange:function(e){updateRow(row.id,'cartonWt',e.target.value);}}),
+            /* brix */
+            ce('input',{style:{padding:'4px 5px',border:'1px solid var(--border2)',borderRadius:4,fontSize:12,fontFamily:'var(--font-mono)',width:'100%',textAlign:'right',background:'var(--card)'},type:'number',step:'0.1',value:row.brix,placeholder:'°Bx',onChange:function(e){updateRow(row.id,'brix',e.target.value);}}),
+            /* key defects inline: blemish, sunburn, mech_dmg, thrips, oil_spots */
+            ['blemish','sunburn','mech_dmg','thrips','oil_spots'].map(function(key){
+              var def=null;
+              CITRUS_DEFECTS.forEach(function(sec){sec.items.forEach(function(d){if(d.key===key)def=d;});});
+              var v=parseFloat(row.defects[key])||0;
+              var over=def&&(def.thresh===0?v>0:v>def.thresh);
+              return ce('input',{key:key,style:{padding:'4px 3px',border:'1px solid '+(over?'var(--red)':'var(--border2)'),borderRadius:4,fontSize:12,fontFamily:'var(--font-mono)',width:'100%',textAlign:'right',background:over?'var(--red-bg)':'var(--card)',color:over?'var(--red)':'var(--text)'},type:'number',step:'0.1',min:'0',value:row.defects[key],onChange:function(k){return function(e){updateRowDefect(row.id,k,e.target.value);};}(key)});
+            }),
+            /* notes */
+            ce('input',{style:{padding:'4px 6px',border:'1px solid var(--border2)',borderRadius:4,fontSize:11,width:'100%',background:'var(--card)'},placeholder:'Notes...',value:row.notes,onChange:function(e){updateRow(row.id,'notes',e.target.value);}}),
+            /* remove */
+            rows.length>1&&ce('button',{style:{background:'none',border:'none',cursor:'pointer',color:'var(--text3)',fontSize:14,padding:0,lineHeight:1},onClick:function(){removeRow(row.id);}},'\u00d7')
+          );
+        }),
+
+        /* averages footer */
+        ce('div',{style:{display:'grid',gridTemplateColumns:'70px 62px 72px 62px repeat(5,52px) 1fr 28px',gap:4,padding:'8px 14px',background:'var(--bg2)',borderTop:'2px solid var(--border2)',alignItems:'center'}},
+          ce('div',{style:{fontSize:10,fontWeight:600,color:'var(--text3)',gridColumn:'span 1'}},'Avg'),
+          ce('div',null),
+          ce('div',{style:{fontFamily:'var(--font-mono)',fontSize:11,textAlign:'right',color:'var(--text2)'}},(avgField('cartonWt')||'—')),
+          ce('div',{style:{fontFamily:'var(--font-mono)',fontSize:11,textAlign:'right',color:'var(--text2)'}},(avgField('brix')||'—')),
+          ['blemish','sunburn','mech_dmg','thrips','oil_spots'].map(function(key){
+            var avg=avgDefect(key);
+            return ce('div',{key:key,style:{fontFamily:'var(--font-mono)',fontSize:11,textAlign:'right',color:avg>0?'var(--amber)':'var(--text3)'}},avg>0?avg.toFixed(1):'—');
+          }),
+          ce('div',{style:{gridColumn:'span 2',display:'flex',alignItems:'center',gap:8}},
+            ce('div',{style:{fontSize:12,fontWeight:700,color:avgTotal>10?'var(--red)':avgTotal>5?'var(--amber)':'var(--green)',fontFamily:'var(--font-mono)'}},'Total avg: '+avgTotal.toFixed(2)+'%'),
+            hasCrit&&ce('span',{className:'badge badge-fail',style:{fontSize:10}},'Critical found')
+          )
+        ),
+
+        /* expand all defects link */
+        ce('div',{style:{padding:'8px 14px',borderTop:'1px solid var(--border)',fontSize:11,color:'var(--text3)',textAlign:'center'}},'Showing 5 key defects inline. All 26 defects are recorded — ',
+          ce('span',{style:{color:'var(--accent)',cursor:'pointer',textDecoration:'underline'}},'view full defect breakdown after saving')
+        )
+      ),
+
+      /* ── SECTION C: Trace & clearance ── */
+      ce('div',{className:'card',style:{marginBottom:14}},
+        ce('div',{className:'section-title'},ce('div',{className:'section-title-bar',style:{background:'#5a7ab0'}}),'Traceability & line clearance'),
+        ce('div',{style:{display:'grid',gridTemplateColumns:'1fr 2fr',gap:14,marginBottom:14}},
+          ce('div',{className:'form-field'},ce('label',{className:'form-label'},'Trace code — رقم التتبع'),ce('input',{className:'form-input',value:traceCode,onChange:function(e){setTraceCode(e.target.value);},style:{fontFamily:'var(--font-mono)',fontSize:12}})),
+          ce('div',null)
+        ),
+        ce('div',{className:'clearance-grid'},
+          CLEARANCE_ITEMS.map(function(item,i){
+            var key='c'+i;
+            var val=clearance[key];
+            return ce('div',{key:key,className:'clearance-item'},
+              ce('div',{className:'clearance-label'},item),
+              ce('div',{className:'toggle-wrap'},
+                ce('button',{className:'toggle-btn'+(val==='Compliant'?' active-comply':''),onClick:function(k){return function(){var n=Object.assign({},clearance);n[k]='Compliant';setClearance(n);};}(key)},'Compliant'),
+                ce('button',{className:'toggle-btn'+(val==='Non-Compliant'?' active-non':''),onClick:function(k){return function(){var n=Object.assign({},clearance);n[k]='Non-Compliant';setClearance(n);};}(key)},'Non-Compliant')
+              )
+            );
+          })
+        )
+      ),
+
+      /* ── SECTION D: Decision ── */
+      ce('div',{className:'card'},
+        ce('div',{className:'section-title'},ce('div',{className:'section-title-bar',style:{background:'#1e2d22'}}),'Decision — القرار'),
+        ce('div',{style:{fontSize:12,color:'var(--text3)',marginBottom:10}},'Auto-suggested based on average defects across all samples: ',ce('strong',{style:{color:autoDec==='A'?'var(--green)':'var(--red)'}},autoDec==='A'?'Accept (A)':'Reject (R)')),
+        ce('div',{className:'decision-bar'},
+          ce('button',{className:'decision-btn decision-a'+(decision==='A'?' sel':''),onClick:function(){setDecision('A');}},
+            'A — Accept',ce('div',{style:{fontSize:11,fontWeight:400,marginTop:2,opacity:.8}},'Average totals within limits')
+          ),
+          ce('button',{className:'decision-btn decision-r'+(decision==='R'?' sel':''),onClick:function(){setDecision('R');}},
+            'R — Reject',ce('div',{style:{fontSize:11,fontWeight:400,marginTop:2,opacity:.8}},'Threshold exceeded or critical found')
+          )
+        )
+      )
+    )
+  );
+}
+
+
+/* ─── CLIENT QC REPORTS (mock — keyed by batch id) ─── */
+var CLIENT_QC_REPORTS={
+  'PB-2026-1194':{
+    batchId:'PB-2026-1194',container:'AMCU 9327595',client:'JUN TRADING',country:'Japan',
+    reportDate:'2026-03-28',clientDecision:'A',claimedValue:0,notes:'Minor colour remarks only. No commercial action.',
+    colourScore:'C3 — Full colour',
+    defects:{blemish:3.8,green:0,sunburn:0,navel:0,liner_spl:0,net_spl:0,mech_dmg:0.4,injuries_e:0,softness:0,pest_burn:0,fading:0,thrips:0,acarus:0,scale:0,mealy:0,fruit_fly:0,atrophy:0,size_var:0,alternaria:0,black_rot:0,brown_rot:0,penicillium:0,long_stem:0,stem_pull:0,injuries_h:0,oil_spots:3.2},
+    totalDefect:7.4
+  },
+  'PB-2026-1187':{
+    batchId:'PB-2026-1187',container:'OTPU 6537831',client:'Lenta',country:'Russia',
+    reportDate:'2026-03-30',clientDecision:'R',claimedValue:2200,notes:'Thrips presence confirmed on arrival. Phytosanitary hold applied at border.',
+    colourScore:'SH — Full yellow',
+    defects:{blemish:0,green:0,sunburn:0,navel:0,liner_spl:0,net_spl:0,mech_dmg:0,injuries_e:0,softness:0,pest_burn:0,fading:0,thrips:4.2,acarus:0,scale:0,mealy:0,fruit_fly:0,atrophy:0,size_var:0,alternaria:0,black_rot:0,brown_rot:0,penicillium:0,long_stem:0,stem_pull:0,injuries_h:5.1,oil_spots:0},
+    totalDefect:9.3
+  }
+};
+
+/* ─── CLIENT QC FORM ─── */
+function ClientQCForm(props){
+  var batch=props.batch, onClose=props.onClose, existing=props.existing||null;
+
+  var sr=useState(existing?existing.reportDate:''); var reportDate=sr[0]; var setReportDate=sr[1];
+  var scli=useState(existing?existing.client:batch.client); var client=scli[0]; var setClient=scli[1];
+  var sco=useState(existing?existing.country:batch.country); var country=sco[0]; var setCountry=sco[1];
+  var scon=useState(existing?existing.container:batch.container); var container=scon[0]; var setContainer=scon[1];
+  var sdec=useState(existing?existing.clientDecision:''); var clientDecision=sdec[0]; var setClientDecision=sdec[1];
+  var scv=useState(existing?String(existing.claimedValue):'0'); var claimedValue=scv[0]; var setClaimedValue=scv[1];
+  var snotes=useState(existing?existing.notes:''); var notes=snotes[0]; var setNotes=snotes[1];
+  var scs=useState(existing?existing.colourScore:''); var colourScore=scs[0]; var setColourScore=scs[1];
+  var stot=useState(existing?String(existing.totalDefect):''); var clientTotal=stot[0]; var setClientTotal=stot[1];
+
+  var initDef={};
+  CITRUS_DEFECTS.forEach(function(sec){sec.items.forEach(function(d){initDef[d.key]=existing?String(existing.defects[d.key]||0):'0';});});
+  var sdf=useState(initDef); var cDefects=sdf[0]; var setCDefects=sdf[1];
+
+  function updateDef(key,val){var n=Object.assign({},cDefects);n[key]=val;setCDefects(n);}
+
+  /* auto-sum client defects */
+  var autoTotal=0;
+  for(var k in cDefects) autoTotal+=parseFloat(cDefects[k])||0;
+  autoTotal=Math.round(autoTotal*100)/100;
+
+  /* gap calculation per defect */
+  function gap(key){
+    var intVal=batch.defects[key]||0;
+    var cliVal=parseFloat(cDefects[key])||0;
+    return Math.round((cliVal-intVal)*10)/10;
+  }
+  function gapColor(g){return g>5?'var(--red)':g>2?'var(--amber)':g<-2?'var(--green)':'var(--text3)';}
+
+  var colourOptions=['C0 — Full green','C1 — Turning (break colour)','C2 — 50–75% colour','C3 — Full colour','SH — Full yellow','Mixed'];
+
+  return ce('div',{style:{background:'var(--bg)',minHeight:'100vh'}},
+    /* topbar */
+    ce('div',{style:{background:'var(--card)',borderBottom:'1px solid var(--border)',padding:'0 26px',height:50,display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:20}},
+      ce('div',{style:{display:'flex',alignItems:'center',gap:10}},
+        ce('button',{className:'btn btn-secondary btn-sm',onClick:onClose},'← Back'),
+        ce('div',{style:{fontFamily:'var(--font-display)',fontSize:16}},existing?'Edit client QC report':'New client QC report'),
+        ce('div',{style:{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:6,padding:'3px 10px',fontSize:11,color:'var(--text2)'}},
+          ce('span',{className:'lot'},batch.id),' · ',batch.variety,' · ',batch.container
+        )
+      ),
+      ce('div',{style:{display:'flex',alignItems:'center',gap:8}},
+        ce('span',{style:{fontSize:11,color:'var(--text3)'}},'Client total:'),
+        ce('span',{style:{fontFamily:'var(--font-mono)',fontSize:14,fontWeight:600,color:autoTotal>10?'var(--red)':autoTotal>5?'var(--amber)':'var(--green)'}},autoTotal.toFixed(2)+'%'),
+        ce('button',{className:'btn btn-primary btn-sm',style:{marginLeft:8}},'Save report')
+      )
+    ),
+
+    ce('div',{style:{padding:'22px 26px',maxWidth:1100,margin:'0 auto'}},
+
+      /* ── Section A: Report header ── */
+      ce('div',{className:'card',style:{marginBottom:14}},
+        ce('div',{className:'section-title'},ce('div',{className:'section-title-bar',style:{background:'#5a7ab0'}}),'Client QC report details'),
+        ce('div',{className:'grid4'},
+          ce('div',{className:'form-field'},ce('label',{className:'form-label'},'Report date'),ce('input',{className:'form-input',type:'date',value:reportDate,onChange:function(e){setReportDate(e.target.value);}})),
+          ce('div',{className:'form-field'},ce('label',{className:'form-label'},'Client'),ce('input',{className:'form-input',value:client,onChange:function(e){setClient(e.target.value);}})),
+          ce('div',{className:'form-field'},ce('label',{className:'form-label'},'Country'),ce('input',{className:'form-input',value:country,onChange:function(e){setCountry(e.target.value);}})),
+          ce('div',{className:'form-field'},ce('label',{className:'form-label'},'Container No'),ce('input',{className:'form-input',value:container,onChange:function(e){setContainer(e.target.value);},style:{fontFamily:'var(--font-mono)',fontSize:12}}))
+        ),
+        ce('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12}},
+          ce('div',{className:'form-field'},
+            ce('label',{className:'form-label'},'Colour score'),
+            ce('select',{className:'form-select',value:colourScore,onChange:function(e){setColourScore(e.target.value);}},
+              ce('option',{value:''},'— Select —'),
+              colourOptions.map(function(o){return ce('option',{key:o,value:o},o);})
+            )
+          ),
+          ce('div',{className:'form-field'},
+            ce('label',{className:'form-label'},'Client total defect %'),
+            ce('input',{className:'form-input',type:'number',step:'0.1',value:clientTotal,onChange:function(e){setClientTotal(e.target.value);},placeholder:'As stated on client report',style:{fontFamily:'var(--font-mono)'}})
+          ),
+          ce('div',{className:'form-field'},
+            ce('label',{className:'form-label'},'Claimed value (USD/EUR)'),
+            ce('input',{className:'form-input',type:'number',step:'1',value:claimedValue,onChange:function(e){setClaimedValue(e.target.value);},style:{fontFamily:'var(--font-mono)',color:parseFloat(claimedValue)>0?'var(--red)':'inherit'}})
+          )
+        ),
+        ce('div',{className:'form-field'},
+          ce('label',{className:'form-label'},'Client notes / remarks'),
+          ce('textarea',{className:'form-input',rows:2,value:notes,onChange:function(e){setNotes(e.target.value);},placeholder:'Client observations, complaints, or remarks from their report...',style:{resize:'vertical'}})
+        ),
+        /* Photo attachment placeholder */
+        ce('div',{style:{border:'1.5px dashed var(--border2)',borderRadius:8,padding:'14px 16px',display:'flex',alignItems:'center',gap:12,color:'var(--text3)',fontSize:12,marginTop:4,cursor:'pointer',background:'var(--bg2)'}},
+          ce('svg',{width:20,height:20,viewBox:'0 0 20 20',fill:'none'},ce('rect',{x:2,y:2,width:16,height:16,rx:3,stroke:'var(--text3)',strokeWidth:1.2}),ce('circle',{cx:7,cy:7,r:1.5,fill:'var(--text3)'}),ce('path',{d:'M2 13l4-4 3 3 3-4 4 5',stroke:'var(--text3)',strokeWidth:1.2,fill:'none',strokeLinejoin:'round'})),
+          ce('div',null,
+            ce('div',{style:{fontWeight:500,color:'var(--text2)'}},'Attach client report / photos'),
+            ce('div',{style:{fontSize:11,marginTop:1}},'PDF, JPG, PNG — drag or click to upload')
+          )
+        )
+      ),
+
+      /* ── Section B: Defect comparison ── */
+      ce('div',{className:'card',style:{marginBottom:14}},
+        ce('div',{className:'section-title'},ce('div',{className:'section-title-bar',style:{background:'#b03030'}}),'Defect comparison — internal vs. client'),
+        ce('div',{style:{fontSize:11,color:'var(--text3)',marginBottom:12}},'Enter client\u2019s reported % per defect. Gap is calculated automatically.'),
+
+        /* column headers */
+        ce('div',{style:{display:'grid',gridTemplateColumns:'1fr 80px 80px 80px 80px',gap:6,padding:'6px 10px',background:'var(--bg2)',borderRadius:'6px 6px 0 0',borderBottom:'2px solid var(--border2)',marginBottom:0}},
+          ce('div',{style:{fontSize:10,fontWeight:600,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.06em'}},'Defect'),
+          ce('div',{style:{fontSize:10,fontWeight:600,color:'var(--text3)',textTransform:'uppercase',textAlign:'right'}},'Internal %'),
+          ce('div',{style:{fontSize:10,fontWeight:600,color:'#5a7ab0',textTransform:'uppercase',textAlign:'right'}},'Client %'),
+          ce('div',{style:{fontSize:10,fontWeight:600,color:'var(--text3)',textTransform:'uppercase',textAlign:'right'}},'Gap'),
+          ce('div',{style:{fontSize:10,fontWeight:600,color:'var(--text3)',textTransform:'uppercase',textAlign:'center'}},'Flag')
+        ),
+
+        /* rows grouped by section */
+        ce('div',{style:{border:'1px solid var(--border)',borderTop:'none',borderRadius:'0 0 6px 6px',overflow:'hidden'}},
+          CITRUS_DEFECTS.map(function(sec){
+            return ce('div',{key:sec.section},
+              /* section sub-header */
+              ce('div',{style:{display:'grid',gridTemplateColumns:'1fr 80px 80px 80px 80px',gap:6,padding:'5px 10px',background:SECTION_COLORS[sec.section]}},
+                ce('div',{style:{fontSize:10,fontWeight:700,color:SECTION_TEXT[sec.section]}},sec.section+' — '+sec.sectionAr),
+                ce('div'),ce('div'),ce('div'),ce('div')
+              ),
+              sec.items.map(function(def,di){
+                var intVal=batch.defects[def.key]||0;
+                var cliVal=parseFloat(cDefects[def.key])||0;
+                var g=Math.round((cliVal-intVal)*10)/10;
+                var gc=gapColor(g);
+                var isCrit=def.sev==='Critical';
+                var lastInSec=di===sec.items.length-1;
+                return ce('div',{key:def.key,style:{display:'grid',gridTemplateColumns:'1fr 80px 80px 80px 80px',gap:6,padding:'6px 10px',borderBottom:lastInSec?'2px solid var(--border2)':'1px solid var(--border)',alignItems:'center',background:cliVal>0&&g>3?'#fff8f0':g<-1?'#f0fff4':'transparent'}},
+                  ce('div',null,
+                    ce('div',{style:{fontSize:12,color:isCrit&&cliVal>0?'var(--red)':'var(--text2)'}},def.en),
+                    ce('div',{style:{fontSize:10,color:'var(--text3)'}},def.ar)
+                  ),
+                  /* internal (read-only) */
+                  ce('div',{style:{textAlign:'right',fontFamily:'var(--font-mono)',fontSize:12,color:'var(--text2)'}},intVal>0?intVal.toFixed(1)+'%':ce('span',{style:{color:'var(--text3)'}},'—')),
+                  /* client input */
+                  ce('input',{
+                    style:{width:'100%',padding:'4px 6px',border:'1px solid var(--border2)',borderRadius:4,background:'var(--card)',fontFamily:'var(--font-mono)',fontSize:12,textAlign:'right',outline:'none',color:cliVal>0&&isCrit?'var(--red)':cliVal>0?'var(--text)':'var(--text3)'},
+                    type:'number',step:'0.1',min:'0',
+                    value:cDefects[def.key],
+                    onChange:function(key){return function(e){updateDef(key,e.target.value);};}(def.key)
+                  }),
+                  /* gap */
+                  ce('div',{style:{textAlign:'right',fontFamily:'var(--font-mono)',fontSize:12,fontWeight:600,color:gc}},
+                    g===0?ce('span',{style:{color:'var(--text3)',fontWeight:400}},'—'):(g>0?'+':'')+g.toFixed(1)+'%'
+                  ),
+                  /* flag */
+                  ce('div',{style:{textAlign:'center'}},
+                    isCrit&&cliVal>0?ce('span',{className:'badge badge-fail',style:{fontSize:10}},'Critical'):
+                    g>5?ce('span',{className:'badge badge-fail',style:{fontSize:10}},'High gap'):
+                    g>2?ce('span',{className:'badge badge-warn',style:{fontSize:10}},'Gap'):
+                    g<-2?ce('span',{className:'badge badge-pass',style:{fontSize:10}},'Better'):
+                    ce('span',{style:{color:'var(--text3)',fontSize:11}},'—')
+                  )
+                );
+              })
+            );
+          }),
+
+          /* totals row */
+          ce('div',{style:{display:'grid',gridTemplateColumns:'1fr 80px 80px 80px 80px',gap:6,padding:'10px 12px',background:'var(--bg2)',alignItems:'center'}},
+            ce('div',{style:{fontWeight:600,fontSize:13}},'Total defect'),
+            ce('div',{style:{textAlign:'right',fontFamily:'var(--font-mono)',fontSize:13,fontWeight:700,color:batch.totalDefect>10?'var(--red)':batch.totalDefect>5?'var(--amber)':'var(--green)'}},batch.totalDefect.toFixed(2)+'%'),
+            ce('div',{style:{textAlign:'right',fontFamily:'var(--font-mono)',fontSize:13,fontWeight:700,color:autoTotal>10?'var(--red)':autoTotal>5?'var(--amber)':'var(--green)'}},autoTotal.toFixed(2)+'%'),
+            ce('div',{style:{textAlign:'right',fontFamily:'var(--font-mono)',fontSize:13,fontWeight:700,color:gapColor(autoTotal-batch.totalDefect)}},
+              (autoTotal-batch.totalDefect)>0?'+':'',
+              (Math.round((autoTotal-batch.totalDefect)*10)/10).toFixed(1)+'%'
+            ),
+            ce('div')
+          )
+        )
+      ),
+
+      /* ── Section C: Client decision ── */
+      ce('div',{className:'card'},
+        ce('div',{className:'section-title'},ce('div',{className:'section-title-bar',style:{background:'#1e2d22'}}),'Client decision — قرار العميل'),
+        ce('div',{style:{fontSize:12,color:'var(--text3)',marginBottom:12}},'Record the client\u2019s official disposition on this shipment.'),
+        ce('div',{className:'decision-bar'},
+          ce('button',{className:'decision-btn decision-a'+(clientDecision==='A'?' sel':''),onClick:function(){setClientDecision('A');}},
+            'A — Accept',ce('div',{style:{fontSize:11,fontWeight:400,marginTop:2,opacity:.8}},'Client accepted the shipment')
+          ),
+          ce('button',{className:'decision-btn decision-r'+(clientDecision==='R'?' sel':''),onClick:function(){setClientDecision('R');}},
+            'R — Reject / Claim',ce('div',{style:{fontSize:11,fontWeight:400,marginTop:2,opacity:.8}},'Client raised a complaint or claim')
+          )
+        ),
+        parseFloat(claimedValue)>0&&ce('div',{className:'alert-warn',style:{marginTop:12}},
+          'Claimed value recorded: ',ce('strong',null,'$'+parseFloat(claimedValue).toLocaleString()),'. This will flag for commercial review and may trigger a credit note workflow.'
+        )
+      )
+    )
+  );
+}
+
+/* ─── CONTAINER EDIT MODAL ─── */
+function ContainerEditModal(props){
+  var batch=props.batch, onSave=props.onSave, onClose=props.onClose;
+  var sv=useState(batch.container||''); var val=sv[0]; var setVal=sv[1];
+  var hasVal=val.trim().length>0;
+  return ce('div',{style:{position:'absolute',top:0,left:0,right:0,bottom:0,background:'rgba(0,0,0,.38)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:50,borderRadius:'var(--r2)'}},
+    ce('div',{style:{background:'var(--card)',borderRadius:'var(--r2)',padding:'20px 22px',width:300,border:'1px solid var(--border)'}},
+      ce('div',{style:{fontWeight:600,fontSize:14,marginBottom:4}},batch.container?'Edit container number':'Add container number'),
+      ce('div',{style:{fontSize:12,color:'var(--text3)',marginBottom:14}},'LOT '+batch.lot+' \u00b7 '+batch.variety),
+      ce('div',{className:'form-label'},'Container No'),
+      ce('input',{
+        className:'form-input',
+        value:val,
+        onChange:function(e){setVal(e.target.value.toUpperCase());},
+        placeholder:'e.g. AMCU 9327595',
+        style:{fontFamily:'var(--font-mono)',fontSize:13,marginBottom:14,letterSpacing:'.04em'},
+        autoFocus:true
+      }),
+      ce('div',{style:{display:'flex',gap:8}},
+        ce('button',{
+          className:'btn btn-primary btn-sm',
+          style:{flex:1,opacity:hasVal?1:.5,cursor:hasVal?'pointer':'not-allowed'},
+          onClick:function(){if(hasVal) onSave(val.trim());}
+        },'Save container'),
+        ce('button',{className:'btn btn-secondary btn-sm',onClick:onClose},'Cancel')
+      )
+    )
+  );
+}
+
+/* ─── MISSING CONTAINER ROW (extracted so hooks are valid) ─── */
+function MissingContainerRow(props){
+  var b=props.batch, onSave=props.onSave;
+  var siv=useState(props.savedVal||''); var inputVal=siv[0]; var setInputVal=siv[1];
+  var sSaved=useState(false); var saved=sSaved[0]; var setSaved=sSaved[1];
+  function doSave(){
+    if(!inputVal.trim()) return;
+    onSave(b.id, inputVal.trim().toUpperCase());
+    setSaved(true);
+    setTimeout(function(){setSaved(false);}, 2000);
+  }
+  return ce('div',{style:{background:'var(--card)',border:'1px solid var(--amber-border)',borderRadius:'var(--r)',padding:'12px 14px',display:'grid',gridTemplateColumns:'1fr 1fr 1fr auto',gap:12,alignItems:'center'}},
+    ce('div',null,
+      ce('div',{style:{fontWeight:600,fontSize:13,color:'var(--text)'}},b.id),
+      ce('div',{style:{fontSize:11,color:'var(--text3)',marginTop:2}},'LOT '+b.lot+' \u00b7 '+b.variety)
+    ),
+    ce('div',null,
+      ce('div',{style:{fontSize:13,color:'var(--text2)'}},'Decision: ',ce('span',{style:{fontWeight:600,color:b.decision==='A'?'var(--green)':'var(--red)'}},b.decision==='A'?'Accept':'Reject')),
+      ce('div',{style:{fontSize:11,color:'var(--text3)',marginTop:2}},b.client+' \u00b7 '+b.date)
+    ),
+    ce('input',{
+      className:'form-input',
+      value:inputVal,
+      onChange:function(e){setInputVal(e.target.value.toUpperCase());setSaved(false);},
+      onKeyDown:function(e){if(e.key==='Enter') doSave();},
+      placeholder:'e.g. AMCU 9327595',
+      style:{fontFamily:'var(--font-mono)',fontSize:12,letterSpacing:'.03em'}
+    }),
+    ce('button',{
+      className:'btn btn-sm',
+      style:{background:saved?'var(--green)':inputVal.trim()?'var(--accent)':'var(--bg2)',color:saved||inputVal.trim()?'#fff':'var(--text3)',border:'none',minWidth:70,transition:'all .2s'},
+      onClick:doSave,
+      disabled:!inputVal.trim()
+    },saved?'\u2713 Saved':'Save')
+  );
+}
+
+/* ─── BATCH LIST (FG QC) ─── */
+function FGView(props){
+  var packhouse=props.packhouse||{name:'',id:''};
+  var stateS=useState(null); var sel=stateS[0]; var setSel=stateS[1];
+  var stateF=useState('All'); var filter=stateF[0]; var setFilter=stateF[1];
+  var stateNew=useState(false); var showNew=stateNew[0]; var setShowNew=stateNew[1];
+  var stateEdit=useState(null); var editBatch=stateEdit[0]; var setEditBatch=stateEdit[1];
+  var stateCQC=useState(null); var cqcBatch=stateCQC[0]; var setCqcBatch=stateCQC[1];
+  var stateContEdit=useState(false); var showContEdit=stateContEdit[0]; var setShowContEdit=stateContEdit[1];
+  var stateMissing=useState(false); var showMissing=stateMissing[0]; var setShowMissing=stateMissing[1];
+  /* local container overrides — in real app this would save to backend */
+  var stateContainers=useState({}); var containerOverrides=stateContainers[0]; var setContainerOverrides=stateContainers[1];
+
+  function getContainer(b){return containerOverrides[b.id]!==undefined?containerOverrides[b.id]:b.container;}
+  function saveContainer(batchId,val){
+    var n=Object.assign({},containerOverrides);
+    n[batchId]=val;
+    setContainerOverrides(n);
+    setShowContEdit(false);
+  }
+
+  if(showNew||editBatch){
+    return ce(InspectionForm,{batch:editBatch,packhouse:packhouse,onClose:function(){setShowNew(false);setEditBatch(null);}});
+  }
+  if(cqcBatch){
+    var existingReport=CLIENT_QC_REPORTS[cqcBatch.id]||null;
+    return ce(ClientQCForm,{batch:cqcBatch,existing:existingReport,onClose:function(){setCqcBatch(null);}});
+  }
+
+  var tabs=['All','Released','Hold','Rework'];
+  var rows=filter==='All'?BATCHES:BATCHES.filter(function(b){return b.status===filter;});
+  var selB=sel?BATCHES.find(function(b){return b.id===sel;}):null;
+  var relCount=BATCHES.filter(function(b){return b.status==='Released';}).length;
+  var holdCount=BATCHES.filter(function(b){return b.status==='Hold';}).length;
+  var avgTotal=Math.round(BATCHES.reduce(function(s,b){return s+b.totalDefect;},0)/BATCHES.length*10)/10;
+  var missingContCount=BATCHES.filter(function(b){return !getContainer(b);}).length;
+
+  return ce('div',null,
+    ce('div',{className:'kpi-grid'},
+      ce('div',{className:'kpi'},ce('div',{className:'kpi-label'},'Batches inspected'),ce('div',{className:'kpi-value'},BATCHES.length),ce('div',{className:'kpi-sub'},'This season')),
+      ce('div',{className:'kpi'},ce('div',{className:'kpi-label'},'Avg total defect'),ce('div',{className:'kpi-value',style:{color:avgTotal>8?'var(--red)':avgTotal>4?'var(--amber)':'var(--green)'}},avgTotal+'%'),ce('div',{className:'kpi-sub'},'Across all inspections')),
+      ce('div',{className:'kpi'},ce('div',{className:'kpi-label'},'Accepted'),ce('div',{className:'kpi-value',style:{color:'var(--green)'}},relCount),ce('div',{className:'kpi-sub'},'Released for export \u2014 QC approved, cleared for shipment')),
+      /* CLICKABLE missing container KPI */
+      ce('div',{className:'kpi',style:{cursor:missingContCount>0?'pointer':'default',border:showMissing?'1.5px solid var(--amber)':'1px solid var(--border)',transition:'border .15s'},onClick:function(){if(missingContCount>0) setShowMissing(!showMissing);}},
+        ce('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between'}},
+          ce('div',{className:'kpi-label'},'Missing container No'),
+          missingContCount>0&&ce('span',{style:{fontSize:10,color:'var(--amber)',fontWeight:500}},showMissing?'\u25b2 hide':'\u25bc view')
+        ),
+        ce('div',{className:'kpi-value',style:{color:missingContCount>0?'var(--amber)':'var(--text)'}},missingContCount),
+        ce('div',{className:'kpi-sub',style:{color:missingContCount>0?'var(--amber)':'var(--text3)'}},missingContCount>0?'Click to view and assign':'All containers assigned')
+      )
+    ),
+
+    /* MISSING CONTAINER PANEL — slides in below KPI strip */
+    showMissing&&missingContCount>0&&ce('div',{style:{background:'var(--amber-bg)',border:'1px solid var(--amber-border)',borderRadius:'var(--r2)',padding:'16px 18px',marginBottom:18}},
+      ce('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}},
+        ce('div',null,
+          ce('div',{style:{fontWeight:600,fontSize:14,color:'var(--amber)'}},'Batches missing container number'),
+          ce('div',{style:{fontSize:12,color:'var(--text3)',marginTop:2}},'Add the container number once it is assigned by the logistics team. Required before linking a client QC report.')
+        ),
+        ce('button',{className:'btn btn-sm',style:{background:'var(--amber-bg)',border:'1px solid var(--amber-border)',color:'var(--amber)'},onClick:function(){setShowMissing(false);}},'\u2715 Close')
+      ),
+      ce('div',{style:{display:'flex',flexDirection:'column',gap:8}},
+        BATCHES.filter(function(b){return !getContainer(b);}).map(function(b){
+          return ce(MissingContainerRow,{key:b.id,batch:b,savedVal:containerOverrides[b.id]||'',onSave:saveContainer});
+        })
+      )
+    ),
+    ce('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}},
+      ce('div',{className:'tabs',style:{marginBottom:0,flex:1}},
+        tabs.map(function(t){return ce('div',{key:t,className:'tab'+(filter===t?' active':''),onClick:function(){setFilter(t);}},t,t!=='All'&&ce('span',{style:{marginLeft:5,background:t==='Released'?'#e8f5ec':'#fff3e0',color:t==='Released'?'#1e6b3a':'#b06010',padding:'1px 5px',borderRadius:8,fontSize:10}},BATCHES.filter(function(b){return b.status===t;}).length));})
+      ),
+      ce('button',{className:'btn btn-primary btn-sm',style:{marginLeft:16},onClick:function(){setShowNew(true);}},'+ New inspection')
+    ),
+    ce('div',{style:{display:'grid',gridTemplateColumns:selB?'1fr 420px':'1fr',gap:14,alignItems:'start'}},
+      ce('div',{className:'scroll-card'},
+        ce('table',null,
+          ce('thead',null,ce('tr',null,
+            ce('th',null,'Batch / LOT'),ce('th',null,'Variety'),ce('th',null,'Date & time'),
+            ce('th',null,'Client / country'),ce('th',null,'Container'),ce('th',null,'Brix'),
+            ce('th',null,'Total defect'),ce('th',null,'Decision'),ce('th',null,'Status'),ce('th',null,'')
+          )),
+          ce('tbody',null,
+            rows.map(function(b){
+              var cont=getContainer(b);
+              return ce('tr',{key:b.id,className:'click',onClick:function(){setSel(sel===b.id?null:b.id);},style:sel===b.id?{background:'#eef6f1'}:{}},
+                ce('td',null,ce('div',{style:{fontWeight:500,color:'var(--text)',fontSize:12}},b.id),ce('div',null,ce('span',{className:'lot'},'LOT '+b.lot))),
+                ce('td',null,ce('div',{style:{fontWeight:500,color:'var(--text)'}},b.variety),ce('div',{style:{fontSize:11,color:'var(--text3)'}},b.cls)),
+                ce('td',null,ce('div',null,b.date),ce('div',{style:{fontSize:11,color:'var(--text3)'}},b.time)),
+                ce('td',null,ce('div',null,b.client),ce('div',{style:{fontSize:11,color:'var(--text3)'}},b.country)),
+                ce('td',null,
+                  cont
+                    ? ce('span',{style:{fontFamily:'var(--font-mono)',fontSize:11,color:'var(--text2)'}},cont)
+                    : ce('span',{className:'badge badge-warn',style:{fontSize:10}},'No container')
+                ),
+                ce('td',{style:{fontFamily:'var(--font-mono)',fontSize:12}},b.brix+'°Bx'),
+                ce('td',null,ce('span',{style:{fontFamily:'var(--font-mono)',fontSize:13,fontWeight:600,color:b.totalDefect>10?'var(--red)':b.totalDefect>5?'var(--amber)':'var(--green)'}},b.totalDefect.toFixed(1)+'%')),
+                ce('td',null,decisionBadge(b.decision)),
+                ce('td',null,ce(StatusBadge,{s:b.status})),
+                ce('td',null,ce('button',{className:'btn btn-secondary btn-sm',onClick:function(bid){return function(e){e.stopPropagation();setEditBatch(BATCHES.find(function(x){return x.id===bid;}));setSel(null);};}(b.id)},'Edit'))
+              );
+            })
+          )
+        )
+      ),
+
+      selB&&ce('div',{className:'dp',style:{position:'sticky',top:12,position:'relative'}},
+        showContEdit&&ce(ContainerEditModal,{
+          batch:Object.assign({},selB,{container:getContainer(selB)}),
+          onSave:function(val){saveContainer(selB.id,val);},
+          onClose:function(){setShowContEdit(false);}
+        }),
+        ce('div',{className:'dp-hdr'},
+          ce('div',null,
+            ce('div',{style:{fontWeight:600,fontSize:14}},selB.id),
+            ce('div',{style:{fontSize:11,color:'var(--text3)',marginTop:2}},selB.variety+' \u00b7 LOT '+selB.lot)
+          ),
+          ce('button',{className:'btn btn-secondary btn-sm',onClick:function(){setSel(null);}},'\u2715')
+        ),
+        ce('div',{className:'dp-body'},
+          /* Container number — prominent at top with edit/add button */
+          ce('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 12px',marginBottom:10,borderRadius:8,border:'1.5px solid '+(getContainer(selB)?'var(--border)':'var(--amber-border)'),background:getContainer(selB)?'var(--bg2)':'var(--amber-bg)'}},
+            ce('div',null,
+              ce('div',{style:{fontSize:10,fontWeight:600,color:getContainer(selB)?'var(--text3)':'var(--amber)',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:3}},'Container No'),
+              getContainer(selB)
+                ? ce('div',{style:{fontFamily:'var(--font-mono)',fontSize:13,fontWeight:600,color:'var(--text)'}},getContainer(selB))
+                : ce('div',{style:{fontSize:12,color:'var(--amber)',fontWeight:500}},'Not assigned yet')
+            ),
+            ce('button',{
+              className:'btn btn-sm',
+              style:{fontSize:11,background:getContainer(selB)?'var(--card)':'var(--amber)',color:getContainer(selB)?'var(--text2)':'#fff',border:'1px solid '+(getContainer(selB)?'var(--border2)':'var(--amber)'),fontWeight:500},
+              onClick:function(){setShowContEdit(true);}
+            },getContainer(selB)?'Edit':'+ Add container')
+          ),
+
+          /* Header info grid — container removed since shown above */
+          ce('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,marginBottom:12}},
+            [['Client',selB.client],['Country',selB.country],['Farm',selB.farm],['Date / time',selB.date+' '+selB.time],['Size',selB.size],['Class',selB.cls],['Carton wt',selB.cartonWt+' kg'],['Wax',selB.wax],['Brix',selB.brix+'\u00b0Bx'],['Trace code',selB.traceCode]].map(function(item){
+              return ce('div',{key:item[0],style:{background:'var(--bg2)',borderRadius:5,padding:'6px 8px'}},
+                ce('div',{style:{fontSize:10,color:'var(--text3)',marginBottom:2}},item[0]),
+                ce('div',{style:{fontSize:12,fontWeight:500,color:'var(--text)',fontFamily:item[0]==='Trace code'?'var(--font-mono)':'inherit'}},item[1])
+              );
+            })
+          ),
+
+          /* Packing & labelling */
+          ce('div',{style:{display:'flex',gap:6,marginBottom:10}},
+            ce('div',{style:{flex:1,background:'var(--bg2)',borderRadius:5,padding:'6px 8px',display:'flex',justifyContent:'space-between',alignItems:'center'}},
+              ce('span',{style:{fontSize:11,color:'var(--text3)'}},'Packing'),
+              ce('span',{className:'badge badge-'+(selB.packing==='Ok'?'pass':'fail')},selB.packing)
+            ),
+            ce('div',{style:{flex:1,background:'var(--bg2)',borderRadius:5,padding:'6px 8px',display:'flex',justifyContent:'space-between',alignItems:'center'}},
+              ce('span',{style:{fontSize:11,color:'var(--text3)'}},'Labelling'),
+              ce('span',{className:'badge badge-'+(selB.labelling==='Ok'?'pass':'fail')},selB.labelling)
+            )
+          ),
+
+          ce('div',{className:'sep'}),
+
+          /* Defects by section */
+          CITRUS_DEFECTS.map(function(sec){
+            var nonZero=sec.items.filter(function(d){return (selB.defects[d.key]||0)>0;});
+            if(nonZero.length===0) return ce('div',{key:sec.section,style:{display:'flex',justifyContent:'space-between',padding:'4px 0',borderBottom:'1px solid var(--border)',fontSize:12}},
+              ce('span',{style:{color:'var(--text3)'}},[sec.section,' \u2014 ',sec.sectionAr]),
+              ce('span',{style:{color:'var(--green)',fontFamily:'var(--font-mono)',fontSize:11}},'0.00%')
+            );
+            return ce('div',{key:sec.section,style:{marginBottom:8}},
+              ce('div',{style:{fontSize:10,fontWeight:600,color:SECTION_TEXT[sec.section],background:SECTION_COLORS[sec.section],padding:'3px 8px',borderRadius:4,marginBottom:4}},sec.section+' \u2014 '+sec.sectionAr),
+              nonZero.map(function(def){
+                var v=selB.defects[def.key]||0;
+                var over=def.thresh===0?v>0:v>def.thresh;
+                return ce('div',{key:def.key,style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'3px 0 3px 8px',fontSize:12,borderBottom:'1px solid var(--border)'}},
+                  ce('span',{style:{color:over?'var(--red)':'var(--text2)'}},def.en),
+                  ce('span',{style:{fontFamily:'var(--font-mono)',fontSize:12,fontWeight:600,color:over?'var(--red)':'var(--text2)'}},v.toFixed(1)+'%')
+                );
+              })
+            );
+          }),
+
+          ce('div',{style:{display:'flex',justifyContent:'space-between',padding:'8px 10px',background:'var(--bg2)',borderRadius:6,marginBottom:10}},
+            ce('span',{style:{fontWeight:600,fontSize:13}},'Total defect'),
+            ce('span',{style:{fontFamily:'var(--font-mono)',fontSize:14,fontWeight:700,color:selB.totalDefect>10?'var(--red)':selB.totalDefect>5?'var(--amber)':'var(--green)'}},selB.totalDefect.toFixed(2)+'%')
+          ),
+
+          /* Clearance */
+          ce('div',{className:'sep'}),
+          ce('div',{style:{fontSize:11,fontWeight:600,color:'var(--text3)',marginBottom:6,textTransform:'uppercase',letterSpacing:'.06em'}},'Line clearance'),
+          CLEARANCE_ITEMS.map(function(item,i){
+            var v=selB.clearance['c'+i];
+            return ce('div',{key:i,style:{display:'flex',justifyContent:'space-between',padding:'3px 0',fontSize:11,borderBottom:'1px solid var(--border)'}},
+              ce('span',{style:{color:'var(--text3)',flex:1,marginRight:8}},item),
+              ce('span',{className:'badge badge-'+(v==='Compliant'?'pass':'fail')},v)
+            );
+          }),
+
+          selB.notes&&ce('div',{style:{marginTop:10,padding:'8px 10px',background:'var(--amber-bg)',borderRadius:6,border:'1px solid var(--amber-border)',fontSize:12,color:'var(--amber)'}},selB.notes),
+
+          ce('div',{className:'sep'}),
+          ce('div',{style:{display:'flex',gap:6}},
+            ce('button',{className:'btn btn-secondary btn-sm',style:{flex:1},onClick:function(){setEditBatch(selB);setSel(null);}},'Edit inspection'),
+            ce('button',{className:'btn btn-secondary btn-sm'},'Export PDF')
+          ),
+
+          /* Client QC report section */
+          ce('div',{className:'sep'}),
+          ce('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}},
+            ce('div',{style:{fontSize:11,fontWeight:600,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.06em'}},'Client QC report'),
+            CLIENT_QC_REPORTS[selB.id]
+              ? ce('span',{className:'badge badge-pass'},'Report linked')
+              : getContainer(selB)
+                ? ce('span',{className:'badge badge-neutral'},'No report yet')
+                : ce('span',{className:'badge badge-warn'},'Container needed first')
+          ),
+
+          /* If no container — show lock message instead of button */
+          !getContainer(selB)
+            ? ce('div',{style:{background:'var(--amber-bg)',border:'1px solid var(--amber-border)',borderRadius:6,padding:'10px 12px',fontSize:12,color:'var(--amber)',display:'flex',alignItems:'center',gap:8}},
+                ce('svg',{width:14,height:14,viewBox:'0 0 14 14',fill:'none'},ce('rect',{x:3,y:6,width:8,height:6,rx:1.5,stroke:'var(--amber)',strokeWidth:1.2}),ce('path',{d:'M5 6V4.5a2 2 0 0 1 4 0V6',stroke:'var(--amber)',strokeWidth:1.2,fill:'none'})),
+                'Add a container number above to link a client QC report'
+              )
+            : ce('div',null,
+                CLIENT_QC_REPORTS[selB.id]&&ce('div',{style:{background:'var(--bg2)',borderRadius:6,padding:'8px 10px',marginBottom:8,fontSize:12}},
+                  ce('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:4}},
+                    ce('span',{style:{color:'var(--text3)'}},'Report date'),
+                    ce('span',{style:{color:'var(--text2)'}},(CLIENT_QC_REPORTS[selB.id]||{}).reportDate||'\u2014')
+                  ),
+                  ce('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:4}},
+                    ce('span',{style:{color:'var(--text3)'}},'Client total'),
+                    ce('span',{style:{fontFamily:'var(--font-mono)',fontWeight:600,color:(CLIENT_QC_REPORTS[selB.id]||{}).totalDefect>10?'var(--red)':(CLIENT_QC_REPORTS[selB.id]||{}).totalDefect>5?'var(--amber)':'var(--green)'}},((CLIENT_QC_REPORTS[selB.id]||{}).totalDefect||0).toFixed(1)+'%')
+                  ),
+                  ce('div',{style:{display:'flex',justifyContent:'space-between'}},
+                    ce('span',{style:{color:'var(--text3)'}},'Client decision'),
+                    (CLIENT_QC_REPORTS[selB.id]||{}).clientDecision==='A'?ce('span',{className:'badge badge-pass'},'Accept'):ce('span',{className:'badge badge-fail'},'Reject / Claim')
+                  )
+                ),
+                ce('button',{
+                  className:'btn btn-sm',
+                  style:{width:'100%',background:CLIENT_QC_REPORTS[selB.id]?'var(--bg2)':'#eef4ff',border:'1px solid '+(CLIENT_QC_REPORTS[selB.id]?'var(--border2)':'#a0b8e8'),color:CLIENT_QC_REPORTS[selB.id]?'var(--text2)':'#2a5aa0',fontWeight:500},
+                  onClick:function(){setCqcBatch(selB);}
+                },CLIENT_QC_REPORTS[selB.id]?'View / edit client QC report':'+ Link client QC report')
+              )
+        )
+      )
+    )
+  );
+}
+
+/* ─── ANALYTICS ─── */
+var TREND=[
+  {m:'Oct',int:86,cli:81,cr:2.1},{m:'Nov',int:84,cli:79,cr:2.8},
+  {m:'Dec',int:82,cli:74,cr:3.6},{m:'Jan',int:85,cli:78,cr:3.1},
+  {m:'Feb',int:87,cli:82,cr:2.4},{m:'Mar',int:83,cli:76,cr:3.4}
+];
+
+function AnalyticsView(){
+  return ce('div',null,
+    ce('div',{className:'kpi-grid'},
+      ce('div',{className:'kpi'},ce('div',{className:'kpi-label'},'Avg total defect % (season)'),ce('div',{className:'kpi-value',style:{color:'var(--amber)'}},'4.2%'),ce('div',{className:'kpi-sub'},'Target: below 5%')),
+      ce('div',{className:'kpi'},ce('div',{className:'kpi-label'},'Rejection rate'),ce('div',{className:'kpi-value',style:{color:'var(--red)'}},'18%'),ce('div',{className:'kpi-sub down'},'\u2191 3% vs. last season')),
+      ce('div',{className:'kpi'},ce('div',{className:'kpi-label'},'Top defect'),ce('div',{className:'kpi-value',style:{fontSize:15,paddingTop:6}},'Oil spots'),ce('div',{className:'kpi-sub'},'Present in 82% of inspections')),
+      ce('div',{className:'kpi'},ce('div',{className:'kpi-label'},'Critical findings (season)'),ce('div',{className:'kpi-value',style:{color:'var(--red)'}},'3'),ce('div',{className:'kpi-sub'},'Thrips x2, Scale x1'))
+    ),
+    ce('div',{className:'grid2',style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:14}},
+      ce('div',{className:'card'},ce('div',{className:'section-title'},ce('div',{className:'section-title-bar',style:{background:'#2b5c3f'}}),'Internal vs. client score trend'),ce(MiniLine,{data:TREND,k1:'int',k2:'cli'}),
+        ce('div',{style:{display:'flex',gap:14,marginTop:8}},
+          ce('div',{style:{display:'flex',alignItems:'center',gap:5,fontSize:11,color:'var(--text3)'}},ce('svg',{width:16,height:8},ce('line',{x1:0,y1:4,x2:16,y2:4,stroke:'#2b5c3f',strokeWidth:2})),'Internal'),
+          ce('div',{style:{display:'flex',alignItems:'center',gap:5,fontSize:11,color:'var(--text3)'}},ce('svg',{width:16,height:8},ce('line',{x1:0,y1:4,x2:16,y2:4,stroke:'#b03030',strokeWidth:2,strokeDasharray:'4 2'})),'Client')
+        )
+      ),
+      ce('div',{className:'card'},
+        ce('div',{className:'section-title'},ce('div',{className:'section-title-bar',style:{background:'#d4620a'}}),'Top defects by frequency (season)'),
+        [['Oil spots / bruising',82,4.1,'Minor'],['Blemish',62,2.4,'Minor'],['Injuries (harvest)',48,1.8,'Major'],['Sunburn',38,2.1,'Major'],['Mechanical damage',28,1.4,'Major'],['Thrips',12,0.4,'Critical']].map(function(d,i){
+          var barColor=d[3]==='Critical'?'var(--red)':d[3]==='Major'?'var(--amber)':'var(--accent)';
+          return ce('div',{key:i,style:{marginBottom:8}},
+            ce('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:3}},
+              ce('span',{style:{fontSize:12,color:'var(--text)'}},[d[0]]),
+              ce('div',{style:{display:'flex',gap:10,fontSize:11,fontFamily:'var(--font-mono)'}},
+                ce('span',{style:{color:'var(--text3)'}},d[1]+'% of batches'),
+                ce('span',{style:{color:barColor,fontWeight:600}},'avg '+d[2]+'%')
+              )
+            ),
+            ce('div',{style:{height:5,background:'var(--bg2)',borderRadius:3,overflow:'hidden'}},
+              ce('div',{style:{height:'100%',width:d[1]+'%',background:barColor,borderRadius:3,opacity:.85}})
+            )
+          );
+        })
+      )
+    ),
+    ce('div',{className:'card'},
+      ce('div',{className:'section-title'},ce('div',{className:'section-title-bar',style:{background:'#8a3a1a'}}),'Critical & zero-tolerance defect log (season)'),
+      ce('div',{className:'scroll-card',style:{border:'none'}},
+        ce('table',null,
+          ce('thead',null,ce('tr',null,ce('th',null,'Batch'),ce('th',null,'Date'),ce('th',null,'Variety'),ce('th',null,'Farm'),ce('th',null,'Defect'),ce('th',null,'Value'),ce('th',null,'Decision'))),
+          ce('tbody',null,
+            [['PB-2026-1201','2026-03-15','Midknight Valencia','Hana','Thrips','2.4%','R'],
+             ['PB-2026-1187','2026-03-13','Eureka Lemon','Nour','Thrips','1.8%','A*'],
+             ['PB-2026-0988','2026-02-20','Navel Lanelate','Badr','Scale insect','0.8%','R']
+            ].map(function(r,i){
+              return ce('tr',{key:i},
+                ce('td',null,ce('span',{className:'lot'},r[0])),
+                ce('td',{style:{color:'var(--text3)'}},r[1]),
+                ce('td',null,r[2]),
+                ce('td',null,r[3]),
+                ce('td',null,ce('span',{className:'badge badge-fail'},r[4])),
+                ce('td',{style:{fontFamily:'var(--font-mono)',fontSize:12,color:'var(--red)',fontWeight:600}},r[5]),
+                ce('td',null,ce('span',{className:'badge badge-'+(r[6]==='R'?'fail':r[6]==='A*'?'warn':'pass')},r[6]))
+              );
+            })
+          )
+        )
+      )
+    )
+  );
+}
+
+/* ─── PACKHOUSES & CROPS ─── */
+var PACKHOUSES=[
+  {id:'KZ',       name:'KZ Packhouse',        location:'Nour — El Khair',  crops:['citrus','mango','pomegranate'], color:'#2b5c3f', initials:'KZ'},
+  {id:'Karma',    name:'Karma Packhouse',      location:'Badr — Hana',      crops:['citrus'],                      color:'#5a3a8a', initials:'KM'},
+  {id:'AbdelWahab',name:'AbdelWahab Packhouse',location:'Salma — Menya',    crops:['citrus'],                      color:'#8a3a1a', initials:'AW'},
+];
+
+var CROPS=[
+  {id:'citrus',     name:'Citrus',      vars:'Navel · Valencia · Lemon · Grapefruit · Mandarin', stats:{batches:5,pending:1,claimRate:'3.4%'}, color:'#d4620a',bg:'#fff4ee',border:'#f5c4a0'},
+  {id:'grapes',     name:'Grapes',      vars:'Red Globe · Crimson · Thompson · Flame',            stats:{batches:2,pending:0,claimRate:'1.1%'}, color:'#7a3a9a',bg:'#f5eeff',border:'#d8b8f0'},
+  {id:'mango',      name:'Mango',       vars:'Kent · Keitt · Tommy Atkins · Alphonso',            stats:{batches:2,pending:0,claimRate:'2.2%'}, color:'#c47a10',bg:'#fffaee',border:'#f5dca0'},
+  {id:'pomegranate',name:'Pomegranate', vars:'Wonderful · Acco · Hershkovitz',                    stats:{batches:2,pending:1,claimRate:'1.8%'}, color:'#9a1a3a',bg:'#fff0f4',border:'#f0b0c0'},
+];
+
+function CitrusIcon(p){var s=p.size||44,c=p.color;return ce('svg',{width:s,height:s,viewBox:'0 0 44 44',fill:'none'},ce('circle',{cx:22,cy:22,r:18,fill:c,opacity:.15}),ce('circle',{cx:22,cy:22,r:12,fill:c,opacity:.25}),ce('circle',{cx:22,cy:22,r:7,fill:c,opacity:.5}),ce('line',{x1:22,y1:8,x2:22,y2:36,stroke:c,strokeWidth:1.2,opacity:.6}),ce('line',{x1:8,y1:22,x2:36,y2:22,stroke:c,strokeWidth:1.2,opacity:.6}),ce('line',{x1:12,y1:12,x2:32,y2:32,stroke:c,strokeWidth:.8,opacity:.4}),ce('line',{x1:32,y1:12,x2:12,y2:32,stroke:c,strokeWidth:.8,opacity:.4}),ce('circle',{cx:22,cy:22,r:3,fill:c}));}
+function GrapesIcon(p){var s=p.size||44,c=p.color,bs=[{cx:22,cy:10,r:4.5},{cx:16,cy:17,r:4.5},{cx:28,cy:17,r:4.5},{cx:12,cy:26,r:4.5},{cx:22,cy:25,r:4.5},{cx:32,cy:26,r:4.5},{cx:18,cy:34,r:3.5},{cx:26,cy:34,r:3.5}];return ce('svg',{width:s,height:s,viewBox:'0 0 44 44',fill:'none'},ce('line',{x1:22,y1:3,x2:22,y2:10,stroke:c,strokeWidth:1.8,strokeLinecap:'round'}),ce('path',{d:'M22 5 Q28 3 30 7',stroke:c,strokeWidth:1.2,fill:'none',strokeLinecap:'round'}),bs.map(function(b,i){return ce('circle',{key:i,cx:b.cx,cy:b.cy,r:b.r,fill:c,opacity:i<3?.9:i<6?.75:.6});}));}
+function MangoIcon(p){var s=p.size||44,c=p.color;return ce('svg',{width:s,height:s,viewBox:'0 0 44 44',fill:'none'},ce('path',{d:'M22 7 C12 9 8 18 10 28 C12 38 18 42 22 42 C26 42 32 38 34 28 C36 18 32 9 22 7Z',fill:c,opacity:.8}),ce('path',{d:'M22 7 C20 13 18 20 20 30',stroke:'#fff',strokeWidth:.8,opacity:.35,fill:'none'}),ce('line',{x1:22,y1:3,x2:22,y2:7,stroke:c,strokeWidth:2,strokeLinecap:'round'}),ce('path',{d:'M22 3 Q27 1 29 4',stroke:c,strokeWidth:1.2,fill:'none',strokeLinecap:'round'}));}
+function PomIcon(p){var s=p.size||44,c=p.color;return ce('svg',{width:s,height:s,viewBox:'0 0 44 44',fill:'none'},ce('circle',{cx:22,cy:26,r:14,fill:c,opacity:.85}),ce('path',{d:'M16 15 Q22 10 28 15',stroke:c,strokeWidth:2.5,fill:'none',strokeLinecap:'round'}),ce('rect',{x:19,y:7,width:6,height:9,rx:2,fill:c}),ce('circle',{cx:18,cy:24,r:2.5,fill:'#fff',opacity:.45}),ce('circle',{cx:26,cy:21,r:2.5,fill:'#fff',opacity:.45}),ce('circle',{cx:22,cy:29,r:2.5,fill:'#fff',opacity:.45}));}
+var ICONS={citrus:CitrusIcon,grapes:GrapesIcon,mango:MangoIcon,pomegranate:PomIcon};
+
+function Landing(props){
+  var sp=useState(null); var phId=sp[0]; var setPhId=sp[1];
+  var ph=phId?PACKHOUSES.find(function(p){return p.id===phId;}):null;
+  var availCrops=ph?CROPS.filter(function(c){return ph.crops.indexOf(c.id)>-1;}):[];
+
+  return ce('div',{className:'landing'},
+    /* header */
+    ce('div',{style:{textAlign:'center',marginBottom:36}},
+      ce('div',{className:'landing-logo'},'Daltex QC'),
+      ce('div',{className:'landing-sub'},'Quality Management \u00b7 Season 2025/26')
+    ),
+
+    /* step 1 — packhouse */
+    ce('div',{style:{width:'100%',maxWidth:680,marginBottom:32}},
+      ce('div',{style:{fontSize:11,fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--text3)',marginBottom:12,display:'flex',alignItems:'center',gap:8}},
+        ce('span',{style:{background:ph?ph.color:'var(--border2)',color:'#fff',borderRadius:'50%',width:20,height:20,display:'inline-flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,flexShrink:0}},'1'),
+        'Select packhouse'
+      ),
+      ce('div',{style:{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12}},
+        PACKHOUSES.map(function(p){
+          var active=phId===p.id;
+          return ce('div',{key:p.id,
+            onClick:function(){setPhId(p.id);},
+            style:{background:active?p.color+'12':' var(--card)',border:'2px solid '+(active?p.color:'var(--border)'),borderRadius:12,padding:'16px 18px',cursor:'pointer',transition:'all .15s'}},
+            ce('div',{style:{display:'flex',alignItems:'center',gap:10,marginBottom:8}},
+              ce('div',{style:{width:36,height:36,borderRadius:9,background:active?p.color:p.color+'22',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'var(--font-mono)',fontSize:12,fontWeight:600,color:active?'#fff':p.color,flexShrink:0}},p.initials),
+              ce('div',null,
+                ce('div',{style:{fontWeight:600,fontSize:14,color:active?p.color:'var(--text)'}},p.name),
+                ce('div',{style:{fontSize:11,color:'var(--text3)',marginTop:1}},p.location)
+              )
+            ),
+            ce('div',{style:{display:'flex',gap:4,flexWrap:'wrap'}},
+              p.crops.map(function(cid){
+                var crop=CROPS.find(function(c){return c.id===cid;});
+                return crop?ce('span',{key:cid,style:{fontSize:10,padding:'2px 7px',borderRadius:10,background:crop.color+'18',color:crop.color,fontWeight:500}},crop.name):null;
+              })
+            )
+          );
+        })
+      )
+    ),
+
+    /* step 2 — crop (only shown after packhouse selected) */
+    ph&&ce('div',{style:{width:'100%',maxWidth:680}},
+      ce('div',{style:{fontSize:11,fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--text3)',marginBottom:12,display:'flex',alignItems:'center',gap:8}},
+        ce('span',{style:{background:'var(--accent)',color:'#fff',borderRadius:'50%',width:20,height:20,display:'inline-flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,flexShrink:0}},'2'),
+        'Select crop — ',ce('span',{style:{color:ph.color,textTransform:'none',letterSpacing:0,fontWeight:500}},ph.name)
+      ),
+      ce('div',{style:{display:'grid',gridTemplateColumns:'repeat('+availCrops.length+',1fr)',gap:14}},
+        availCrops.map(function(crop){
+          var Icon=ICONS[crop.id];
+          return ce('div',{key:crop.id,className:'crop-card',onClick:function(){props.onSelect(phId,crop.id);}},
+            ce('div',{className:'crop-icon-wrap',style:{background:crop.bg,border:'1px solid '+crop.border}},ce(Icon,{size:32,color:crop.color})),
+            ce('div',{className:'crop-name'},crop.name),
+            ce('div',{className:'crop-vars'},crop.vars),
+            ce('div',null,
+              ['Batches','Pending','Claim rate'].map(function(label,i){
+                var vals=[crop.stats.batches,crop.stats.pending,crop.stats.claimRate];
+                return ce('div',{key:label,className:'crop-stat'},
+                  ce('span',{className:'crop-stat-label'},label),
+                  ce('span',{className:'crop-stat-val',style:{color:i===1&&vals[i]>0?'#b87820':'inherit'}},vals[i])
+                );
+              })
+            )
+          );
+        })
+      )
+    )
+  );
+}
+
+/* ─── EXPORT DATASET (all packhouses, all crops for demo) ─── */
+var ALL_EXPORT_ROWS = [
+  {id:'PB-2026-1194',date:'2026-03-14',packhouse:'KZ',crop:'Citrus',variety:'Navelina Navel',lot:'809',container:'AMCU 9327595',client:'JUN TRADING',country:'Japan',farm:'Nour',size:'48',cls:'Class 1',brix:9.2,cartonWt:16.4,wax:'CR',decision:'A',status:'Released',totalDefect:4.2,blemish:2.1,green:0,sunburn:0,navel:0,liner_spl:0,net_spl:0,mech_dmg:0,injuries_e:0,softness:0,pest_burn:0,fading:0,thrips:0,acarus:0,scale:0,mealy:0,fruit_fly:0,atrophy:0,size_var:0,alternaria:0,black_rot:0,brown_rot:0,penicillium:0,long_stem:0,stem_pull:0,injuries_h:0,oil_spots:2.1,hasClientReport:1,clientTotal:7.4,clientDecision:'A',claimedValue:0,gap:3.2},
+  {id:'PB-2026-1187',date:'2026-03-13',packhouse:'KZ',crop:'Citrus',variety:'Eureka Lemon',lot:'811',container:'OTPU 6537831',client:'Lenta',country:'Russia',farm:'Nour',size:'113',cls:'Class 1.5',brix:7.3,cartonWt:16.6,wax:'SH',decision:'A',status:'Released',totalDefect:5.3,blemish:0,green:0,sunburn:0,navel:0,liner_spl:0,net_spl:0,mech_dmg:0,injuries_e:0,softness:0,pest_burn:0,fading:0,thrips:1.8,acarus:0,scale:0,mealy:0,fruit_fly:0,atrophy:0,size_var:0,alternaria:0,black_rot:0,brown_rot:0,penicillium:0,long_stem:0,stem_pull:0,injuries_h:3.5,oil_spots:0,hasClientReport:1,clientTotal:9.3,clientDecision:'R',claimedValue:2200,gap:4.0},
+  {id:'PB-2026-1201',date:'2026-03-15',packhouse:'KZ',crop:'Citrus',variety:'Midknight Valencia',lot:'815',container:'',client:'AM FRESH (COOP)',country:'Netherlands',farm:'Hana',size:'56',cls:'Class 1',brix:10.1,cartonWt:15.8,wax:'CR',decision:'R',status:'Hold',totalDefect:16.1,blemish:3.2,green:0,sunburn:4.1,navel:0,liner_spl:0,net_spl:0,mech_dmg:1.8,injuries_e:0,softness:0,pest_burn:0,fading:0,thrips:2.4,acarus:0,scale:0,mealy:0,fruit_fly:0,atrophy:0,size_var:0,alternaria:0,black_rot:0,brown_rot:0,penicillium:0,long_stem:0,stem_pull:1.2,injuries_h:0,oil_spots:3.4,hasClientReport:0,clientTotal:null,clientDecision:'',claimedValue:0,gap:null},
+  {id:'PB-2026-1178',date:'2026-03-12',packhouse:'KZ',crop:'Citrus',variety:'Star Ruby Grapefruit',lot:'806',container:'HLXU 5522110',client:'JUN TRADING',country:'Japan',farm:'Salma',size:'40',cls:'Class 1',brix:9.8,cartonWt:16.5,wax:'CR',decision:'A',status:'Released',totalDefect:3.6,blemish:1.8,green:0,sunburn:0,navel:0,liner_spl:0,net_spl:0,mech_dmg:0,injuries_e:0,softness:0,pest_burn:0,fading:0,thrips:0,acarus:0,scale:0,mealy:0,fruit_fly:0,atrophy:0,size_var:0,alternaria:0,black_rot:0,brown_rot:0,penicillium:0,long_stem:0,stem_pull:0,injuries_h:0,oil_spots:1.8,hasClientReport:0,clientTotal:null,clientDecision:'',claimedValue:0,gap:null},
+  {id:'PB-2026-1165',date:'2026-03-11',packhouse:'KZ',crop:'Citrus',variety:'Lanelate Navel',lot:'802',container:'',client:'Aartsen fruit',country:'Netherlands',farm:'Badr',size:'48',cls:'Class 1',brix:8.9,cartonWt:16.2,wax:'SH',decision:'A',status:'Released',totalDefect:9.6,blemish:2.7,green:0,sunburn:2.1,navel:0,liner_spl:0,net_spl:0,mech_dmg:0,injuries_e:0,softness:0,pest_burn:0,fading:0,thrips:0,acarus:2.1,scale:0,mealy:0,fruit_fly:0,atrophy:0,size_var:0,alternaria:0,black_rot:0,brown_rot:0,penicillium:0,long_stem:0,stem_pull:0,injuries_h:0,oil_spots:2.7,hasClientReport:0,clientTotal:null,clientDecision:'',claimedValue:0,gap:null},
+  {id:'PB-2026-1088',date:'2026-03-10',packhouse:'Karma',crop:'Citrus',variety:'Navel',lot:'791',container:'MRKU 8812201',client:'Coop Denmark',country:'Denmark',farm:'Hana',size:'40',cls:'Class 1',brix:10.2,cartonWt:16.3,wax:'CR',decision:'A',status:'Released',totalDefect:3.1,blemish:1.4,green:0,sunburn:0.8,navel:0,liner_spl:0,net_spl:0,mech_dmg:0,injuries_e:0,softness:0,pest_burn:0,fading:0,thrips:0,acarus:0,scale:0,mealy:0,fruit_fly:0,atrophy:0,size_var:0,alternaria:0,black_rot:0,brown_rot:0,penicillium:0,long_stem:0,stem_pull:0,injuries_h:0,oil_spots:0.9,hasClientReport:1,clientTotal:4.2,clientDecision:'A',claimedValue:0,gap:1.1},
+  {id:'PB-2026-1071',date:'2026-03-09',packhouse:'Karma',crop:'Citrus',variety:'Valencia',lot:'788',container:'TCKU 3301882',client:'Marks & Spencer',country:'UK',farm:'Hana',size:'48',cls:'Class 1',brix:9.6,cartonWt:16.4,wax:'CR',decision:'A',status:'Released',totalDefect:5.8,blemish:2.2,green:0,sunburn:1.4,navel:0,liner_spl:0,net_spl:0,mech_dmg:0.8,injuries_e:0,softness:0,pest_burn:0,fading:0,thrips:0,acarus:1.4,scale:0,mealy:0,fruit_fly:0,atrophy:0,size_var:0,alternaria:0,black_rot:0,brown_rot:0,penicillium:0,long_stem:0,stem_pull:0,injuries_h:0,oil_spots:0,hasClientReport:0,clientTotal:null,clientDecision:'',claimedValue:0,gap:null},
+  {id:'PB-2026-1059',date:'2026-03-08',packhouse:'AbdelWahab',crop:'Citrus',variety:'Navelina Navel',lot:'782',container:'GESU 4412990',client:'AM FRESH (COOP)',country:'Netherlands',farm:'ELBaraka',size:'40',cls:'Class 1',brix:9.4,cartonWt:16.1,wax:'SH',decision:'R',status:'Hold',totalDefect:11.4,blemish:3.8,green:0,sunburn:3.2,navel:0,liner_spl:0,net_spl:0,mech_dmg:1.8,injuries_e:0,softness:0,pest_burn:0,fading:0,thrips:0,acarus:0,scale:0,mealy:0,fruit_fly:0,atrophy:0,size_var:0,alternaria:0,black_rot:0,brown_rot:0,penicillium:0,long_stem:0,stem_pull:0.9,injuries_h:0,oil_spots:1.7,hasClientReport:0,clientTotal:null,clientDecision:'',claimedValue:0,gap:null},
+  {id:'PB-2026-1044',date:'2026-03-07',packhouse:'AbdelWahab',crop:'Citrus',variety:'Eureka Lemon',lot:'779',container:'HLXU 6612003',client:'Lenta',country:'Russia',farm:'ELBaraka',size:'100',cls:'Class 1.5',brix:7.1,cartonWt:16.8,wax:'No Wax',decision:'A',status:'Released',totalDefect:6.2,blemish:0,green:0,sunburn:0,navel:0,liner_spl:0,net_spl:0,mech_dmg:0.4,injuries_e:0,softness:0,pest_burn:0,fading:0,thrips:0,acarus:1.2,scale:0,mealy:0,fruit_fly:0,atrophy:0,size_var:0,alternaria:0,black_rot:0,brown_rot:0,penicillium:0,long_stem:1.4,stem_pull:0,injuries_h:2.2,oil_spots:1.0,hasClientReport:1,clientTotal:8.1,clientDecision:'A',claimedValue:380,gap:1.9},
+  {id:'PB-2026-1031',date:'2026-03-05',packhouse:'KZ',crop:'Citrus',variety:'Caracara Navel',lot:'772',container:'MSCU 7733210',client:'JUN TRADING',country:'Japan',farm:'Nour',size:'36',cls:'Class 1',brix:10.4,cartonWt:16.5,wax:'CR',decision:'A',status:'Released',totalDefect:2.8,blemish:1.1,green:0,sunburn:0,navel:0,liner_spl:0,net_spl:0,mech_dmg:0,injuries_e:0,softness:0,pest_burn:0,fading:0,thrips:0,acarus:0,scale:0,mealy:0,fruit_fly:0,atrophy:0,size_var:0,alternaria:0,black_rot:0,brown_rot:0,penicillium:0,long_stem:0,stem_pull:0,injuries_h:0,oil_spots:1.7,hasClientReport:0,clientTotal:null,clientDecision:'',claimedValue:0,gap:null},
+];
+
+var EXPORT_COLS = [
+  'id','date','packhouse','crop','variety','lot','container','client','country','farm',
+  'size','cls','brix','cartonWt','wax','decision','status','totalDefect',
+  'blemish','green','sunburn','navel','liner_spl','net_spl','mech_dmg','injuries_e',
+  'softness','pest_burn','fading','thrips','acarus','scale','mealy','fruit_fly',
+  'atrophy','size_var','alternaria','black_rot','brown_rot','penicillium',
+  'long_stem','stem_pull','injuries_h','oil_spots',
+  'hasClientReport','clientTotal','clientDecision','claimedValue','gap'
+];
+
+/* ─── EXPORT VIEW ─── */
+function ExportView(props){
+  var phId = props.phId||'';
+
+  /* filter state */
+  var sd1=useState('2026-03-01'); var dateFrom=sd1[0]; var setDateFrom=sd1[1];
+  var sd2=useState('2026-03-31'); var dateTo=sd2[0]; var setDateTo=sd2[1];
+  var sph=useState('All'); var fPh=sph[0]; var setFPh=sph[1];
+  var scp=useState('All'); var fCrop=scp[0]; var setFCrop=scp[1];
+  var svr=useState('All'); var fVar=svr[0]; var setFVar=svr[1];
+  var sdec=useState('All'); var fDec=sdec[0]; var setFDec=sdec[1];
+  var scli=useState('All'); var fClient=scli[0]; var setFClient=scli[1];
+  var sfm=useState('All'); var fFarm=sfm[0]; var setFFarm=sfm[1];
+  var sst=useState('All'); var fStatus=sst[0]; var setFStatus=sst[1];
+  var scr=useState('All'); var fCR=scr[0]; var setFCR=scr[1];
+  var sformat=useState('csv'); var fmt=sformat[0]; var setFmt=sformat[1];
+
+  /* derived unique values */
+  var allPh=['All'].concat(PACKHOUSES.map(function(p){return p.id;}));
+  var allCrops=['All','Citrus','Mango','Pomegranate','Grapes'];
+  var allVars=['All'].concat(Array.from(new Set(ALL_EXPORT_ROWS.map(function(r){return r.variety;}))).sort());
+  var allClients=['All'].concat(Array.from(new Set(ALL_EXPORT_ROWS.map(function(r){return r.client;}))).sort());
+  var allFarms=['All'].concat(Array.from(new Set(ALL_EXPORT_ROWS.map(function(r){return r.farm;}))).sort());
+
+  /* filter logic */
+  var filtered = ALL_EXPORT_ROWS.filter(function(r){
+    if(r.date < dateFrom || r.date > dateTo) return false;
+    if(fPh!=='All' && r.packhouse!==fPh) return false;
+    if(fCrop!=='All' && r.crop!==fCrop) return false;
+    if(fVar!=='All' && r.variety!==fVar) return false;
+    if(fDec!=='All' && r.decision!==fDec) return false;
+    if(fClient!=='All' && r.client!==fClient) return false;
+    if(fFarm!=='All' && r.farm!==fFarm) return false;
+    if(fStatus!=='All' && r.status!==fStatus) return false;
+    if(fCR==='With report' && !r.hasClientReport) return false;
+    if(fCR==='No report' && r.hasClientReport) return false;
+    if(fCR==='With claim' && !r.claimedValue) return false;
+    return true;
+  });
+
+  /* summary stats from filtered set */
+  var totalRows=filtered.length;
+  var acceptCount=filtered.filter(function(r){return r.decision==='A';}).length;
+  var rejectCount=filtered.filter(function(r){return r.decision==='R';}).length;
+  var avgDef=totalRows>0?Math.round(filtered.reduce(function(s,r){return s+r.totalDefect;},0)/totalRows*10)/10:0;
+  var totalClaim=filtered.reduce(function(s,r){return s+(r.claimedValue||0);},0);
+  var missingCont=filtered.filter(function(r){return !r.container;}).length;
+
+  /* CSV builder */
+  function buildCSV(){
+    var header=EXPORT_COLS.join(',');
+    var rows=filtered.map(function(r){
+      return EXPORT_COLS.map(function(k){
+        var v=r[k];
+        if(v===null||v===undefined) return '';
+        if(typeof v==='string'&&v.indexOf(',')>-1) return '"'+v+'"';
+        return v;
+      }).join(',');
+    });
+    return [header].concat(rows).join('\n');
+  }
+
+  function downloadCSV(){
+    var csv=buildCSV();
+    var blob=new Blob([csv],{type:'text/csv'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url; a.download='daltex_qc_export_'+dateFrom+'_to_'+dateTo+'.csv';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+
+  function resetFilters(){
+    setDateFrom('2026-03-01'); setDateTo('2026-03-31');
+    setFPh('All'); setFCrop('All'); setFVar('All');
+    setFDec('All'); setFClient('All'); setFFarm('All');
+    setFStatus('All'); setFCR('All');
+  }
+
+  var filterLabel=function(label,val,setter,opts){
+    return ce('div',{className:'form-field'},
+      ce('label',{className:'form-label'},label),
+      ce('select',{className:'form-select',value:val,onChange:function(e){setter(e.target.value);}},
+        opts.map(function(o){return ce('option',{key:o,value:o},o);})
+      )
+    );
+  };
+
+  return ce('div',null,
+
+    /* ── summary KPIs ── */
+    ce('div',{className:'kpi-grid'},
+      ce('div',{className:'kpi'},
+        ce('div',{className:'kpi-label'},'Rows selected'),
+        ce('div',{className:'kpi-value'},totalRows),
+        ce('div',{className:'kpi-sub'},totalRows===ALL_EXPORT_ROWS.length?'All records':'Filtered from '+ALL_EXPORT_ROWS.length+' total')
+      ),
+      ce('div',{className:'kpi'},
+        ce('div',{className:'kpi-label'},'Accept / Reject'),
+        ce('div',{style:{display:'flex',alignItems:'baseline',gap:6}},
+          ce('div',{className:'kpi-value',style:{color:'var(--green)',fontSize:22}},acceptCount),
+          ce('span',{style:{fontSize:14,color:'var(--text3)'}},' / '),
+          ce('div',{className:'kpi-value',style:{color:'var(--red)',fontSize:22}},rejectCount)
+        ),
+        ce('div',{className:'kpi-sub'},'Avg defect: '+avgDef+'%')
+      ),
+      ce('div',{className:'kpi'},
+        ce('div',{className:'kpi-label'},'Total claimed value'),
+        ce('div',{className:'kpi-value',style:{color:totalClaim>0?'var(--red)':'var(--text)',fontSize:totalClaim>0?20:28}},totalClaim>0?'\u20ac'+totalClaim.toLocaleString():'—'),
+        ce('div',{className:'kpi-sub'},filtered.filter(function(r){return r.claimedValue>0;}).length+' batches with claims')
+      ),
+      ce('div',{className:'kpi'},
+        ce('div',{className:'kpi-label'},'Missing container No'),
+        ce('div',{className:'kpi-value',style:{color:missingCont>0?'var(--amber)':'var(--text)'}},missingCont),
+        ce('div',{className:'kpi-sub',style:{color:missingCont>0?'var(--amber)':'var(--text3)'}},missingCont>0?'Will export blank':'All assigned')
+      )
+    ),
+
+    ce('div',{style:{display:'grid',gridTemplateColumns:'280px 1fr',gap:16,alignItems:'start'}},
+
+      /* ── FILTERS PANEL ── */
+      ce('div',{className:'card',style:{position:'sticky',top:16}},
+        ce('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}},
+          ce('div',{className:'section-title',style:{marginBottom:0}},
+            ce('div',{className:'section-title-bar',style:{background:'#2b5c3f'}}),
+            'Filters'
+          ),
+          ce('button',{className:'btn btn-secondary btn-sm',onClick:resetFilters},'Reset')
+        ),
+
+        /* Date range */
+        ce('div',{style:{marginBottom:12}},
+          ce('label',{className:'form-label'},'Date range'),
+          ce('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6}},
+            ce('input',{className:'form-input',type:'date',value:dateFrom,onChange:function(e){setDateFrom(e.target.value);}}),
+            ce('input',{className:'form-input',type:'date',value:dateTo,onChange:function(e){setDateTo(e.target.value);}})
+          )
+        ),
+
+        filterLabel('Packhouse',fPh,setFPh,allPh),
+        filterLabel('Crop',fCrop,setFCrop,allCrops),
+        filterLabel('Variety',fVar,setFVar,allVars),
+        filterLabel('Decision',fDec,setFDec,['All','A — Accept','R — Reject']),
+        filterLabel('Status',fStatus,setFStatus,['All','Released','Hold','Rework']),
+        filterLabel('Client',fClient,setFClient,allClients),
+        filterLabel('Farm',fFarm,setFFarm,allFarms),
+        filterLabel('Client QC report',fCR,setFCR,['All','With report','No report','With claim']),
+
+        ce('div',{className:'sep'}),
+
+        /* Format selector */
+        ce('div',{style:{marginBottom:12}},
+          ce('label',{className:'form-label'},'Export format'),
+          ce('div',{style:{display:'flex',gap:6}},
+            ['csv','xlsx — coming soon'].map(function(f){
+              var val=f.split('\u2014')[0].trim();
+              var disabled=f.includes('coming');
+              return ce('button',{
+                key:f,
+                className:'btn btn-sm',
+                style:{flex:1,fontSize:11,background:fmt===val?'var(--accent)':'var(--card)',color:fmt===val?'#fff':disabled?'var(--text3)':'var(--text2)',border:'1px solid '+(fmt===val?'var(--accent)':disabled?'var(--border)':'var(--border2)'),cursor:disabled?'not-allowed':'pointer',opacity:disabled?.5:1},
+                onClick:function(){if(!disabled) setFmt(val);}
+              },f);
+            })
+          )
+        ),
+
+        /* Download button */
+        ce('button',{
+          className:'btn btn-primary',
+          style:{width:'100%',justifyContent:'center',fontSize:13,opacity:totalRows===0?.4:1,cursor:totalRows===0?'not-allowed':'pointer'},
+          onClick:function(){if(totalRows>0) downloadCSV();}
+        },
+          ce('svg',{width:14,height:14,viewBox:'0 0 16 16',fill:'currentColor',style:{flexShrink:0}},ce('path',{d:'M8 1.5a.5.5 0 0 1 .5.5v7.793l2.146-2.147a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 1 1 .708-.708L7.5 9.793V2a.5.5 0 0 1 .5-.5zM2 13.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z'})),
+          'Download '+totalRows+' rows (.csv)'
+        ),
+
+        ce('div',{style:{marginTop:8,fontSize:10,color:'var(--text3)',textAlign:'center',lineHeight:1.5}},
+          '49 columns \u00b7 Tableau-ready structure\u000aOne row per inspection session'
+        )
+      ),
+
+      /* ── PREVIEW TABLE ── */
+      ce('div',null,
+        ce('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}},
+          ce('div',{style:{fontSize:13,color:'var(--text2)',fontWeight:500}},
+            totalRows+' inspection'+(totalRows!==1?'s':'')+' match your filters'
+          ),
+          ce('div',{style:{fontSize:11,color:'var(--text3)'}},'Showing all columns in export \u00b7 scroll right to see defects')
+        ),
+        totalRows===0
+          ? ce('div',{style:{background:'var(--card)',border:'1px solid var(--border)',borderRadius:'var(--r2)',padding:'40px',textAlign:'center',color:'var(--text3)'}},
+              ce('div',{style:{fontFamily:'var(--font-display)',fontSize:18,marginBottom:6}},'No records match'),
+              ce('div',{style:{fontSize:13}},'Try adjusting the date range or filters')
+            )
+          : ce('div',{style:{background:'var(--card)',border:'1px solid var(--border)',borderRadius:'var(--r2)',overflowX:'auto'}},
+              ce('table',{style:{minWidth:900}},
+                ce('thead',null,ce('tr',null,
+                  ce('th',null,'Batch ID'),
+                  ce('th',null,'Date'),
+                  ce('th',null,'Packhouse'),
+                  ce('th',null,'Crop'),
+                  ce('th',null,'Variety'),
+                  ce('th',null,'LOT'),
+                  ce('th',null,'Container'),
+                  ce('th',null,'Client'),
+                  ce('th',null,'Farm'),
+                  ce('th',null,'Decision'),
+                  ce('th',null,'Status'),
+                  ce('th',null,'Total defect'),
+                  ce('th',null,'Brix'),
+                  ce('th',null,'Thrips'),
+                  ce('th',null,'Client total'),
+                  ce('th',null,'Client dec.'),
+                  ce('th',null,'Claimed \u20ac'),
+                  ce('th',null,'Gap')
+                )),
+                ce('tbody',null,
+                  filtered.map(function(r){
+                    return ce('tr',{key:r.id},
+                      ce('td',null,ce('span',{className:'lot'},r.id)),
+                      ce('td',{style:{color:'var(--text3)',whiteSpace:'nowrap'}},r.date),
+                      ce('td',null,
+                        ce('span',{style:{fontSize:11,fontWeight:600,color:PACKHOUSES.find(function(p){return p.id===r.packhouse;})?PACKHOUSES.find(function(p){return p.id===r.packhouse;}).color:'var(--text2)'}},r.packhouse)
+                      ),
+                      ce('td',null,r.crop),
+                      ce('td',null,ce('div',{style:{maxWidth:120,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontSize:12}},r.variety)),
+                      ce('td',{style:{fontFamily:'var(--font-mono)',fontSize:11}},r.lot),
+                      ce('td',null,
+                        r.container
+                          ? ce('span',{style:{fontFamily:'var(--font-mono)',fontSize:11}},r.container)
+                          : ce('span',{className:'badge badge-warn',style:{fontSize:10}},'Missing')
+                      ),
+                      ce('td',{style:{fontSize:12,maxWidth:100,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},r.client),
+                      ce('td',{style:{fontSize:12}},r.farm),
+                      ce('td',null,r.decision==='A'?ce('span',{className:'badge badge-pass'},'A'):ce('span',{className:'badge badge-fail'},'R')),
+                      ce('td',null,ce('span',{className:'badge badge-'+(r.status==='Released'?'pass':r.status==='Hold'?'warn':'hold')},r.status)),
+                      ce('td',null,ce('span',{style:{fontFamily:'var(--font-mono)',fontSize:12,fontWeight:600,color:r.totalDefect>10?'var(--red)':r.totalDefect>5?'var(--amber)':'var(--green)'}},r.totalDefect.toFixed(1)+'%')),
+                      ce('td',{style:{fontFamily:'var(--font-mono)',fontSize:12}},r.brix),
+                      ce('td',null,r.thrips>0?ce('span',{style:{fontFamily:'var(--font-mono)',fontSize:12,fontWeight:600,color:'var(--red)'}},r.thrips.toFixed(1)+'%'):ce('span',{style:{color:'var(--text3)',fontSize:12}},'—')),
+                      ce('td',null,r.hasClientReport?ce('span',{style:{fontFamily:'var(--font-mono)',fontSize:12,color:r.clientTotal>8?'var(--red)':r.clientTotal>5?'var(--amber)':'var(--green)',fontWeight:600}},r.clientTotal.toFixed(1)+'%'):ce('span',{style:{color:'var(--text3)',fontSize:12}},'—')),
+                      ce('td',null,r.clientDecision?ce('span',{className:'badge badge-'+(r.clientDecision==='A'?'pass':'fail')},r.clientDecision):ce('span',{style:{color:'var(--text3)',fontSize:12}},'—')),
+                      ce('td',null,r.claimedValue>0?ce('span',{style:{fontFamily:'var(--font-mono)',fontSize:12,color:'var(--red)',fontWeight:600}},r.claimedValue.toLocaleString()):ce('span',{style:{color:'var(--text3)',fontSize:12}},'—')),
+                      ce('td',null,r.gap!==null?ce('span',{style:{fontFamily:'var(--font-mono)',fontSize:12,fontWeight:600,color:r.gap>4?'var(--red)':r.gap>2?'var(--amber)':'var(--text3)'}},'+'+r.gap.toFixed(1)+'%'):ce('span',{style:{color:'var(--text3)',fontSize:12}},'—'))
+                    );
+                  })
+                )
+              )
+            )
+      )
+    )
+  );
+}
+
+
+
+
+/* ═══════════════════════════════════════
+   AUTH SYSTEM
+═══════════════════════════════════════ */
+var ROLES = {
+  admin:       {label:'Admin',             color:'#1e2d22',badge:'#2b5c3f',
+                perms:{viewFG:true, createFG:true, editFG:true, approveFG:true,viewClientQC:true,createClientQC:true,viewExport:true,viewAnalytics:true,viewAdmin:true, allPackhouses:true}},
+  qc_manager:  {label:'QC Manager',        color:'#2b5c3f',badge:'#4a8c62',
+                perms:{viewFG:true, createFG:true, editFG:true, approveFG:true,viewClientQC:true,createClientQC:true,viewExport:true,viewAnalytics:true,viewAdmin:false,allPackhouses:true}},
+  ph_manager:  {label:'Packhouse Manager', color:'#5a3a8a',badge:'#7a5ab0',
+                perms:{viewFG:true, createFG:true, editFG:true, approveFG:true,viewClientQC:true,createClientQC:true,viewExport:true,viewAnalytics:true,viewAdmin:false,allPackhouses:false}},
+  qc_supervisor:{label:'QC Supervisor',    color:'#3a5a8a',badge:'#5a7ab0',
+                perms:{viewFG:true, createFG:true, editFG:true, approveFG:true,viewClientQC:true,createClientQC:false,viewExport:false,viewAnalytics:true,viewAdmin:false,allPackhouses:false}},
+  inspector:   {label:'Inspector',         color:'#3a6a3a',badge:'#5a9a5a',
+                perms:{viewFG:true, createFG:true, editFG:false,approveFG:false,viewClientQC:false,createClientQC:false,viewExport:false,viewAnalytics:false,viewAdmin:false,allPackhouses:false}},
+  commercial:  {label:'Commercial / Export',color:'#7a5010',badge:'#b87820',
+                perms:{viewFG:true, createFG:false,editFG:false,approveFG:false,viewClientQC:true,createClientQC:true,viewExport:true,viewAnalytics:true,viewAdmin:false,allPackhouses:true}},
+  executive:   {label:'Executive',         color:'#8a1a1a',badge:'#b03030',
+                perms:{viewFG:false,createFG:false,editFG:false,approveFG:false,viewClientQC:false,createClientQC:false,viewExport:true,viewAnalytics:true,viewAdmin:false,allPackhouses:true}},
+};
+var PERM_LABELS = {
+  viewFG:'View inspections',createFG:'Create inspections',editFG:'Edit inspections',
+  approveFG:'Approve / reject',viewClientQC:'View client reports',createClientQC:'Submit client reports',
+  viewExport:'Export data',viewAnalytics:'Analytics dashboard',viewAdmin:'Admin panel',allPackhouses:'All packhouses'
+};
+var INITIAL_USERS = [
+  {id:'u1',name:'Tarek Fouad',      email:'tarek@daltex.com',    password:'admin123',  role:'admin',        packhouse:'All',        active:true, lastLogin:'2026-03-15 09:12'},
+  {id:'u2',name:'Mohamed Saleh',    email:'m.saleh@daltex.com',  password:'kz2026',    role:'inspector',    packhouse:'KZ',         active:true, lastLogin:'2026-03-15 07:44'},
+  {id:'u3',name:'Nada Ibrahim',     email:'n.ibrahim@daltex.com',password:'kzqc2026',  role:'qc_supervisor',packhouse:'KZ',         active:true, lastLogin:'2026-03-14 16:30'},
+  {id:'u4',name:'Ahmed Hassan',     email:'a.hassan@daltex.com', password:'karma2026', role:'inspector',    packhouse:'Karma',      active:true, lastLogin:'2026-03-13 11:20'},
+  {id:'u5',name:'Sara Mahmoud',     email:'s.mahmoud@daltex.com',password:'aw2026',    role:'qc_supervisor',packhouse:'AbdelWahab', active:true, lastLogin:'2026-03-12 08:55'},
+  {id:'u6',name:'Khaled Wafik',     email:'k.wafik@daltex.com',  password:'phkz2026',  role:'ph_manager',   packhouse:'KZ',         active:true, lastLogin:'2026-03-15 06:30'},
+  {id:'u7',name:'Layla Mostafa',    email:'l.mostafa@daltex.com',password:'qcmgr2026', role:'qc_manager',   packhouse:'All',        active:true, lastLogin:'2026-03-14 14:10'},
+  {id:'u8',name:'Omar Fares',       email:'o.fares@daltex.com',  password:'export2026',role:'commercial',   packhouse:'All',        active:true, lastLogin:'2026-03-11 09:00'},
+  {id:'u9',name:'Dina Raouf',       email:'d.raouf@daltex.com',  password:'exec2026',  role:'executive',    packhouse:'All',        active:false,lastLogin:'2026-03-01 10:00'},
+];
+var IPATHS={
+  fg:'M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm2.47 4.72a.75.75 0 0 0-1.06 0L7.25 7.88l-.66-.66a.75.75 0 1 0-1.06 1.06l1.19 1.19a.75.75 0 0 0 1.06 0l2.69-2.69a.75.75 0 0 0 0-1.06z',
+  analytics:'M2 12.5v1h12v-1H2zm0-9v6.5h3v-6.5H2zm4 2.5v4h3v-4H6zm4-4v8h3v-8h-3z',
+  export:'M8 1.5a.5.5 0 0 1 .5.5v7.793l2.146-2.147a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 1 1 .708-.708L7.5 9.793V2a.5.5 0 0 1 .5-.5zM2 13.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z',
+  admin:'M8 1a2 2 0 1 1 0 4 2 2 0 0 1 0-4zM4 9a4 4 0 0 1 8 0v1H4V9zm-1 2h10v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-1z',
+};
+
+/* LOGIN */
+function LoginScreen(props){
+  var se=useState(''); var email=se[0]; var setEmail=se[1];
+  var sp=useState(''); var pw=sp[0]; var setPw=sp[1];
+  var serr=useState(''); var err=serr[0]; var setErr=serr[1];
+  var sshow=useState(false); var showPw=sshow[0]; var setShowPw=sshow[1];
+  function tryLogin(){
+    var u=props.users.find(function(x){return x.email.toLowerCase()===email.trim().toLowerCase()&&x.password===pw;});
+    if(!u){setErr('Incorrect email or password.');return;}
+    if(!u.active){setErr('Account deactivated. Contact your administrator.');return;}
+    setErr('');props.onLogin(u);
+  }
+  var demos=[['Admin (all access)','tarek@daltex.com','admin123'],['KZ Inspector','m.saleh@daltex.com','kz2026'],['QC Supervisor KZ','n.ibrahim@daltex.com','kzqc2026'],['QC Manager (all)','l.mostafa@daltex.com','qcmgr2026'],['Executive (read-only)','d.raouf@daltex.com','exec2026']];
+  return ce('div',{style:{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--bg)',padding:24}},
+    ce('div',{style:{width:'100%',maxWidth:420}},
+      ce('div',{style:{textAlign:'center',marginBottom:32}},
+        ce('div',{style:{fontFamily:'var(--font-display)',fontSize:36,color:'var(--text)'}},'Daltex QC'),
+        ce('div',{style:{fontSize:11,color:'var(--text3)',letterSpacing:'.08em',textTransform:'uppercase',marginTop:4}},'Quality Management System')
+      ),
+      ce('div',{className:'card',style:{padding:'28px 30px'}},
+        ce('div',{style:{fontFamily:'var(--font-display)',fontSize:20,marginBottom:2}},'Sign in'),
+        ce('div',{style:{fontSize:12,color:'var(--text3)',marginBottom:22}},'Enter your email and password to continue'),
+        ce('div',{className:'form-field',style:{marginBottom:12}},
+          ce('label',{className:'form-label'},'Email address'),
+          ce('input',{className:'form-input',type:'email',value:email,placeholder:'your.name@daltex.com',onChange:function(e){setEmail(e.target.value);setErr('');},onKeyDown:function(e){if(e.key==='Enter')tryLogin();}})
+        ),
+        ce('div',{className:'form-field',style:{marginBottom:18}},
+          ce('label',{className:'form-label'},'Password'),
+          ce('div',{style:{position:'relative'}},
+            ce('input',{className:'form-input',type:showPw?'text':'password',value:pw,placeholder:'\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022',onChange:function(e){setPw(e.target.value);setErr('');},onKeyDown:function(e){if(e.key==='Enter')tryLogin();},style:{paddingRight:44}}),
+            ce('button',{onClick:function(){setShowPw(!showPw);},style:{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'var(--text3)',fontSize:11}},showPw?'Hide':'Show')
+          )
+        ),
+        err&&ce('div',{style:{background:'var(--red-bg)',border:'1px solid var(--red-border)',borderRadius:6,padding:'8px 12px',fontSize:12,color:'var(--red)',marginBottom:14}},err),
+        ce('button',{className:'btn btn-primary',style:{width:'100%',justifyContent:'center',fontSize:14,padding:'10px'},onClick:tryLogin},'Sign in'),
+        ce('div',{style:{marginTop:18,padding:'12px 14px',background:'var(--bg2)',borderRadius:8}},
+          ce('div',{style:{fontSize:11,fontWeight:600,color:'var(--text2)',marginBottom:8}},'Demo accounts \u2014 click to fill'),
+          demos.map(function(d,i){
+            return ce('div',{key:i,style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'4px 0',borderBottom:i<demos.length-1?'1px solid var(--border)':'none'}},
+              ce('span',{style:{fontSize:11,color:'var(--text2)',fontWeight:500}},d[0]),
+              ce('button',{style:{background:'none',border:'none',cursor:'pointer',fontFamily:'var(--font-mono)',fontSize:10,color:'var(--accent)',padding:0},onClick:function(){setEmail(d[1]);setPw(d[2]);}},d[1])
+            );
+          })
+        )
+      )
+    )
+  );
+}
+
+/* ADMIN */
+function AdminCenter(props){
+  var users=props.users,setUsers=props.setUsers;
+  var stab=useState('users'); var tab=stab[0]; var setTab=stab[1];
+  var sedit=useState(null); var editId=sedit[0]; var setEditId=sedit[1];
+  var sshow=useState(false); var showAdd=sshow[0]; var setShowAdd=sshow[1];
+  var snn=useState(''),sne=useState(''),snp=useState(''),snr=useState('inspector'),snph=useState('KZ');
+  var newName=snn[0],setNewName=snn[1],newEmail=sne[0],setNewEmail=sne[1];
+  var newPw=snp[0],setNewPw=snp[1],newRole=snr[0],setNewRole=snr[1],newPh=snph[0],setNewPh=snph[1];
+  var roleKeys=Object.keys(ROLES);
+  var phOptions=['All','KZ','Karma','AbdelWahab'];
+  function toggleActive(uid){setUsers(users.map(function(u){return u.id===uid?Object.assign({},u,{active:!u.active}):u;}));}
+  function updateRole(uid,r){setUsers(users.map(function(u){return u.id===uid?Object.assign({},u,{role:r}):u;}));setEditId(null);}
+  function updatePH(uid,ph){setUsers(users.map(function(u){return u.id===uid?Object.assign({},u,{packhouse:ph}):u;}));}
+  function addUser(){
+    if(!newName||!newEmail||!newPw)return;
+    setUsers(users.concat([{id:'u'+Date.now(),name:newName,email:newEmail,password:newPw,role:newRole,packhouse:newPh,active:true,lastLogin:'Never'}]));
+    setNewName('');setNewEmail('');setNewPw('');setNewRole('inspector');setNewPh('KZ');setShowAdd(false);
+  }
+  return ce('div',{style:{padding:'22px 26px',maxWidth:1100}},
+    ce('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:18}},
+      ce('div',null,
+        ce('div',{style:{fontFamily:'var(--font-display)',fontSize:22}},'Admin control center'),
+        ce('div',{style:{fontSize:12,color:'var(--text3)',marginTop:2}},'Users, roles, packhouse access, permissions')
+      ),
+      ce('button',{className:'btn btn-primary btn-sm',onClick:function(){setShowAdd(!showAdd);}},showAdd?'Cancel':'+ Add user')
+    ),
+    ce('div',{style:{display:'flex',gap:6,flexWrap:'wrap',marginBottom:18}},
+      roleKeys.map(function(rk){
+        var cnt=users.filter(function(u){return u.role===rk&&u.active;}).length;
+        return cnt?ce('div',{key:rk,style:{background:ROLES[rk].badge+'18',border:'1px solid '+ROLES[rk].badge+'40',borderRadius:20,padding:'3px 12px',fontSize:11,fontWeight:500,color:ROLES[rk].badge}},ROLES[rk].label+' \u00b7 '+cnt):null;
+      }).filter(Boolean),
+      ce('div',{style:{background:'var(--red-bg)',border:'1px solid var(--red-border)',borderRadius:20,padding:'3px 12px',fontSize:11,fontWeight:500,color:'var(--red)'}},
+        'Inactive \u00b7 '+users.filter(function(u){return !u.active;}).length)
+    ),
+    showAdd&&ce('div',{className:'card',style:{marginBottom:14,border:'1px solid var(--accent)'}},
+      ce('div',{style:{fontWeight:600,fontSize:13,color:'var(--accent)',marginBottom:12}},'New user'),
+      ce('div',{style:{display:'grid',gridTemplateColumns:'repeat(5,minmax(0,1fr))',gap:10,marginBottom:10}},
+        ce('div',null,ce('label',{className:'form-label'},'Full name'),ce('input',{className:'form-input',value:newName,onChange:function(e){setNewName(e.target.value);},placeholder:'Full name'})),
+        ce('div',null,ce('label',{className:'form-label'},'Email'),ce('input',{className:'form-input',type:'email',value:newEmail,onChange:function(e){setNewEmail(e.target.value);},placeholder:'email@daltex.com'})),
+        ce('div',null,ce('label',{className:'form-label'},'Password'),ce('input',{className:'form-input',value:newPw,onChange:function(e){setNewPw(e.target.value);}})),
+        ce('div',null,ce('label',{className:'form-label'},'Role'),ce('select',{className:'form-select',value:newRole,onChange:function(e){setNewRole(e.target.value);}},roleKeys.map(function(rk){return ce('option',{key:rk,value:rk},ROLES[rk].label);}))),
+        ce('div',null,ce('label',{className:'form-label'},'Packhouse'),ce('select',{className:'form-select',value:newPh,onChange:function(e){setNewPh(e.target.value);}},phOptions.map(function(p){return ce('option',{key:p,value:p},p==='All'?'All packhouses':p);})))
+      ),
+      ce('button',{className:'btn btn-primary btn-sm',onClick:addUser,style:{opacity:(!newName||!newEmail||!newPw)?.4:1}},'Save user')
+    ),
+    ce('div',{className:'tabs'},
+      ce('div',{className:'tab'+(tab==='users'?' active':''),onClick:function(){setTab('users');}},'Users ('+users.length+')'),
+      ce('div',{className:'tab'+(tab==='matrix'?' active':''),onClick:function(){setTab('matrix');}},'Permissions matrix')
+    ),
+    tab==='users'&&ce('div',{className:'scroll-card'},
+      ce('table',null,
+        ce('thead',null,ce('tr',null,ce('th',null,'Name'),ce('th',null,'Email'),ce('th',null,'Role'),ce('th',null,'Packhouse'),ce('th',null,'Last login'),ce('th',null,'Status'),ce('th',null,'Actions'))),
+        ce('tbody',null,
+          users.map(function(u){
+            var r=ROLES[u.role]||{label:u.role,badge:'#888'};
+            var isEdit=editId===u.id;
+            return ce('tr',{key:u.id,style:{opacity:u.active?1:.45}},
+              ce('td',null,ce('div',{style:{display:'flex',alignItems:'center',gap:8}},
+                ce('div',{style:{width:28,height:28,borderRadius:'50%',background:r.badge+'22',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:r.badge,flexShrink:0}},
+                  u.name.split(' ').map(function(n){return n[0];}).slice(0,2).join('')),
+                ce('span',{style:{fontWeight:500,fontSize:13}},u.name)
+              )),
+              ce('td',{style:{fontFamily:'var(--font-mono)',fontSize:11,color:'var(--text3)'}},u.email),
+              ce('td',null,isEdit
+                ?ce('select',{className:'form-select',style:{fontSize:12},value:u.role,onChange:function(e){updateRole(u.id,e.target.value);}},roleKeys.map(function(rk){return ce('option',{key:rk,value:rk},ROLES[rk].label);}))
+                :ce('span',{style:{fontSize:11,fontWeight:500,padding:'2px 8px',borderRadius:10,background:r.badge+'18',color:r.badge}},r.label)
+              ),
+              ce('td',null,isEdit
+                ?ce('select',{className:'form-select',style:{fontSize:12},value:u.packhouse,onChange:function(e){updatePH(u.id,e.target.value);}},phOptions.map(function(p){return ce('option',{key:p,value:p},p==='All'?'All packhouses':p);}))
+                :ce('span',{style:{fontSize:12}},u.packhouse==='All'?'All packhouses':u.packhouse)
+              ),
+              ce('td',{style:{fontSize:11,color:'var(--text3)'}},u.lastLogin||'\u2014'),
+              ce('td',null,ce('span',{className:'badge badge-'+(u.active?'pass':'neutral')},u.active?'Active':'Inactive')),
+              ce('td',null,ce('div',{style:{display:'flex',gap:5}},
+                ce('button',{className:'btn btn-secondary btn-sm',style:{fontSize:11},onClick:function(){setEditId(isEdit?null:u.id);}},isEdit?'Done':'Edit'),
+                u.id!=='u1'&&ce('button',{className:'btn btn-sm',style:{fontSize:11,background:u.active?'var(--red-bg)':'var(--green-bg)',color:u.active?'var(--red)':'var(--green)',border:'1px solid '+(u.active?'var(--red-border)':'var(--green-border)')},onClick:function(){toggleActive(u.id);}},u.active?'Deactivate':'Activate')
+              ))
+            );
+          })
+        )
+      )
+    ),
+    tab==='matrix'&&ce('div',{className:'scroll-card'},
+      ce('table',{style:{fontSize:12}},
+        ce('thead',null,ce('tr',null,
+          ce('th',{style:{minWidth:160}},'Permission'),
+          roleKeys.map(function(rk){return ce('th',{key:rk,style:{textAlign:'center',color:ROLES[rk].badge,fontSize:11}},ROLES[rk].label);})
+        )),
+        ce('tbody',null,
+          Object.keys(PERM_LABELS).map(function(pk){
+            return ce('tr',{key:pk},
+              ce('td',{style:{fontWeight:500,color:'var(--text2)'}},PERM_LABELS[pk]),
+              roleKeys.map(function(rk){
+                var has=ROLES[rk].perms[pk];
+                return ce('td',{key:rk,style:{textAlign:'center',padding:'7px'}},
+                  has?ce('div',{style:{width:18,height:18,borderRadius:'50%',background:'var(--green-bg)',border:'1px solid var(--green-border)',margin:'0 auto',display:'flex',alignItems:'center',justifyContent:'center'}},
+                      ce('svg',{width:10,height:10,viewBox:'0 0 10 10'},ce('path',{d:'M1.5 5l2.5 2.5 4.5-4.5',stroke:'var(--green)',strokeWidth:1.5,fill:'none',strokeLinecap:'round',strokeLinejoin:'round'})))
+                    :ce('div',{style:{width:18,height:18,borderRadius:'50%',background:'var(--bg2)',border:'1px solid var(--border)',margin:'0 auto'}})
+                );
+              })
+            );
+          })
+        )
+      )
+    )
+  );
+}
+
+/* MAIN APP */
+function App(){
+  var sUsers=useState(INITIAL_USERS); var users=sUsers[0]; var setUsers=sUsers[1];
+  var sUser=useState(null); var currentUser=sUser[0]; var setCurrentUser=sUser[1];
+  var sc=useState(null); var cropId=sc[0]; var setCropId=sc[1];
+  var sph=useState(null); var phId=sph[0]; var setPhId=sph[1];
+  var sv=useState('fg'); var view=sv[0]; var setView=sv[1];
+  function signOut(){setCurrentUser(null);setCropId(null);setPhId(null);setView('fg');}
+  if(!currentUser) return ce(LoginScreen,{users:users,onLogin:function(u){setCurrentUser(u);if(u.packhouse!=='All')setPhId(u.packhouse);}});
+  var role=ROLES[currentUser.role]||ROLES.inspector;
+  var perms=role.perms;
+  var availViews=[];
+  if(perms.viewFG)        availViews.push({id:'fg',       label:'FG Inspection',sub:'Stage 2'});
+  if(perms.viewAnalytics) availViews.push({id:'analytics',label:'QC Analytics', sub:'Dashboard'});
+  if(perms.viewExport)    availViews.push({id:'export',   label:'Export data',  sub:'CSV / Tableau'});
+  if(perms.viewAdmin)     availViews.push({id:'admin',    label:'Admin',        sub:'Users & access'});
+  var cropInfo=CROPS.find(function(c){return c.id===cropId;})||{name:'',color:'#2b5c3f'};
+  var phInfo=PACKHOUSES.find(function(p){return p.id===phId;})||{name:phId||'',color:'#2b5c3f',initials:'--'};
+  var cur=availViews.find(function(v){return v.id===view;})||availViews[0]||{label:'',id:''};
+  var needsCropPH=perms.viewFG&&(!cropId||!phId)&&view!=='admin'&&view!=='analytics'&&view!=='export';
+
+  function mkSidebar(){
+    return ce('div',{className:'sidebar'},
+      ce('div',{className:'sidebar-logo'},
+        ce('div',{className:'sidebar-logo-mark'},'Daltex QC'),
+        phInfo.name&&ce('div',{className:'sidebar-logo-crop'},ce('div',{className:'sidebar-dot',style:{background:phInfo.color}}),phInfo.name),
+        cropInfo.name&&ce('div',{style:{fontSize:10,color:'var(--sidebar-muted)',marginTop:2,display:'flex',alignItems:'center',gap:5}},
+          ce('div',{className:'sidebar-dot',style:{background:cropInfo.color,width:5,height:5}}),cropInfo.name)
+      ),
+      ce('div',{className:'sidebar-sec'},'Modules'),
+      availViews.map(function(v){
+        return ce('div',{key:v.id,className:'nav-item'+(view===v.id?' active':''),onClick:function(){setView(v.id);}},
+          ce('svg',{viewBox:'0 0 16 16',fill:'currentColor',className:'nav-icon'},ce('path',{d:IPATHS[v.id]||IPATHS.fg})),
+          ce('div',null,ce('div',{style:{lineHeight:1.2}},v.label),ce('div',{style:{fontSize:10,opacity:.5,marginTop:1}},v.sub))
+        );
+      }),
+      ce('div',{className:'sidebar-sec',style:{marginTop:6}},'Alerts'),
+      ce('div',{style:{margin:'2px 8px',padding:'6px 10px',borderRadius:5,background:'rgba(176,48,48,.14)',borderLeft:'2px solid #b03030',fontSize:11,color:'#e89090',lineHeight:1.4}},'Thrips on PB-2026-1201 \u2014 hold'),
+      ce('div',{className:'sidebar-bottom'},
+        ce('div',{style:{margin:'2px 8px 8px',padding:'7px 10px',borderRadius:6,background:'rgba(255,255,255,.07)',display:'flex',alignItems:'center',gap:8}},
+          ce('div',{style:{width:26,height:26,borderRadius:'50%',background:role.badge,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#fff',flexShrink:0}},
+            currentUser.name.split(' ').map(function(n){return n[0];}).slice(0,2).join('')),
+          ce('div',{style:{overflow:'hidden'}},
+            ce('div',{style:{fontSize:12,color:'var(--sidebar-text)',fontWeight:500,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},currentUser.name),
+            ce('div',{style:{fontSize:10,color:'var(--sidebar-muted)'}},role.label)
+          )
+        ),
+        perms.viewFG&&(cropId||phId)&&ce('div',{className:'nav-item',style:{fontSize:12},onClick:function(){setCropId(null);if(perms.allPackhouses)setPhId(null);}},
+          ce('svg',{viewBox:'0 0 16 16',fill:'currentColor',className:'nav-icon'},ce('path',{d:'M11 2.5a.5.5 0 0 0-.5-.5H3a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h7.5a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h7.5a.5.5 0 0 0 .5-.5v-1zm1.854 4.646a.5.5 0 0 0 0 .708l1.792 1.792-1.792 1.792a.5.5 0 0 0 .707.707l2.146-2.145a.5.5 0 0 0 0-.708L13.56 7.147a.5.5 0 0 0-.707.707z'})),
+          ce('div',null,'Switch crop')
+        ),
+        ce('div',{className:'nav-item',style:{fontSize:12},onClick:signOut},
+          ce('svg',{viewBox:'0 0 16 16',fill:'currentColor',className:'nav-icon'},ce('path',{d:'M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z'})),
+          ce('div',null,'Sign out')
+        )
+      )
+    );
+  }
+
+  if(needsCropPH){
+    return ce('div',{className:'layout'},mkSidebar(),
+      ce('div',{className:'main'},ce(Landing,{currentUser:currentUser,onSelect:function(pid,cid){
+        var finalPh=currentUser.packhouse!=='All'?currentUser.packhouse:pid;
+        setPhId(finalPh);setCropId(cid);setView('fg');
+      }}))
+    );
+  }
+
+  return ce('div',{className:'layout'},mkSidebar(),
+    ce('div',{className:'main'},
+      cur.id&&ce('div',{className:'topbar'},
+        ce('div',{className:'topbar-left'},
+          ce('div',{className:'topbar-title'},cur.label),
+          phInfo.name&&ce('div',{style:{display:'flex',alignItems:'center',gap:6,background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:6,padding:'3px 10px'}},
+            ce('span',{style:{fontSize:11,fontWeight:600,color:phInfo.color}},phInfo.name),
+            cropInfo.name&&ce('span',{style:{fontSize:11,color:'var(--text3)'}},' \u00b7 '),
+            cropInfo.name&&ce('div',{style:{width:8,height:8,borderRadius:'50%',background:cropInfo.color,flexShrink:0}}),
+            cropInfo.name&&ce('span',{style:{fontSize:11,color:'var(--text2)',fontWeight:500}},cropInfo.name)
+          )
+        ),
+        ce('div',{className:'topbar-right'},ce('span',{style:{fontSize:11,color:'var(--text3)'}},'Season 2025/26 \u00b7 Mar 2026'))
+      ),
+      ce('div',{className:'page'},
+        view==='fg'        &&perms.viewFG       &&ce(FGView,{packhouse:phInfo,perms:perms}),
+        view==='analytics' &&perms.viewAnalytics &&ce(AnalyticsView,null),
+        view==='export'    &&perms.viewExport    &&ce(ExportView,{phId:phId}),
+        view==='admin'     &&perms.viewAdmin     &&ce(AdminCenter,{users:users,setUsers:setUsers})
+      )
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(ce(App,null));
+</script>
+</body>
+</html>
